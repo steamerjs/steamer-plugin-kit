@@ -1,0 +1,31 @@
+{
+  "name": "steamer-plugin-kit",
+  "version": "0.0.1",
+  "description": "steamer-plugin-kit",
+  "main": "index.js",
+  "scripts": {
+    
+  },
+  "files": [
+    "index.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SteamerTeam/steamer-plugin-kit.git"
+  },
+  "keywords": [
+    "steamer"
+  ],
+  "author": "SteamerTeam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SteamerTeam/steamer-plugin-kit/issues"
+  },
+  "homepage": "https://github.com/SteamerTeam/steamer-plugin-kit#readme",
+  "peerDependencies": {
+    "steamer-core": "*"
+  },
+  "devDependencies": {
+    "jasmine": "^2.4.0"
+  }
+}
