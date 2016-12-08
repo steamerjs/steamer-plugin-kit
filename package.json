@@ -23,9 +23,14 @@
   },
   "homepage": "https://github.com/SteamerTeam/steamer-plugin-kit#readme",
   "peerDependencies": {
-    "steamer-core": "*"
+    "colors": "^1.1.2",
+    "fs-extra": "^1.0.0",
+    "inquirer": "^1.2.3",
+    "lodash": "^4.17.2"
   },
   "devDependencies": {
-    "jasmine": "^2.4.0"
+    "jasmine": "^2.4.0",
+    "gulp": "gulpjs/gulp#4.0",
+    "steamer-cli": "^0.0.1"
   }
 }
