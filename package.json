@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "scripts": {
@@ -28,6 +28,6 @@
   "devDependencies": {
     "jasmine": "^2.4.0",
     "gulp": "gulpjs/gulp#4.0",
-    "steamer-cli": "^0.0.1"
+    "steamer-cli": "*"
   }
 }
