@@ -1,14 +1,11 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "scripts": {
     
   },
-  "files": [
-    "index.js"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SteamerTeam/steamer-plugin-kit.git"
@@ -22,7 +19,7 @@
     "url": "https://github.com/SteamerTeam/steamer-plugin-kit/issues"
   },
   "homepage": "https://github.com/SteamerTeam/steamer-plugin-kit#readme",
-  "peerDependencies": {
+  "dependencies": {
     "colors": "^1.1.2",
     "fs-extra": "^1.0.0",
     "inquirer": "^1.2.3",
