@@ -3,14 +3,14 @@
 manage starter kit
 
 ### Installation
-```
+```javascript
 npm i -g steamer-cli
 
 npm i -g steamer-plugin-kit
 ```
 
 ### Usage
-```
+```javascript
 // install starterkit globally first, for example:
 npm i -g stearm-react
 
@@ -34,7 +34,7 @@ steamer kit -u <starterkit>
 ```
 
 ### Develop
-```
+```javascript
 // In command 1
 gulp dev
 
