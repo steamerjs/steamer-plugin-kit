@@ -1,17 +1,15 @@
 "use strict";
 
-const os = require('os'),
-	  path = require('path'),
+const path = require('path'),
 	  fs = require('fs-extra'),
 	  inquirer = require('inquirer'),
-	  _ = require('lodash');
+	  _ = require('lodash'),
+	  pluginUtils = require('steamer-pluginutils');
 
-const isWindows = (os.type() === "Windows_NT");
+var utils = new pluginUtils();
+utils.pluginName = "steamer-plugin-kit";
 
-const prefix = "steamer-",
-	  node_modules = isWindows ? 
-	  				  path.join(process.config.variables.node_prefix + "/node_modules")
-	  				: path.join(process.config.variables.node_prefix + "/lib/node_modules");
+const prefix = "steamer-"
 
 function KitPlugin(argv) {
 	this.argv = argv;
@@ -64,10 +62,10 @@ KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, tpl, bkFiles) {
  * @return {String}        [finish config template string]
  */
 KitPlugin.prototype.processTemplate = function(tpl, config) {
-	let configKeys = Object.keys(config.config);
+	let configKeys = Object.keys(config);
 
 	configKeys.map((item, key) => {
-		tpl = tpl.replace("{{" + item + "}}", config.config[item]);
+		tpl = tpl.replace("{{" + item + "}}", config[item]);
 	});
 
 	return tpl;
@@ -80,37 +78,24 @@ KitPlugin.prototype.processTemplate = function(tpl, config) {
  * @param  {Object} config [config object]
  */
 KitPlugin.prototype.createLocalConfig = function(kit, folder, config) {
-	let newConfig = {};
-	newConfig.kit = kit;
-	newConfig.config = config;
+	config.kit = kit;
 
-	let localConfig = JSON.stringify(newConfig, null, 4);
-	fs.ensureFileSync(path.join(folder, ".steamer/" + kit + ".js"));
-	fs.writeFileSync(path.join(folder, ".steamer/" + kit + ".js"), localConfig, 'utf-8');
+	let isJs = true,
+		isForce = false;
+
+	utils.createConfig(folder, config, isJs, isForce);
 };
 
 /**
  * [read local config]
  * @param  {String} folder     [target folder]
- * @param  {String} kit        [kit name]
  * @param  {String} configFile [local config file]
  * @return {Boolean / Object}            [config value]
  */
-KitPlugin.prototype.readLocalConfig = function(folder, kit, configFile) {
-	let isLocalConfigExist = fs.existsSync(configFile);
+KitPlugin.prototype.readLocalConfig = function(folder) {
+	let isJs = true;
 
-	try {
-		if (isLocalConfigExist) {
-			let config = fs.readFileSync(configFile, "utf-8");
-			return JSON.parse(config);
-		}
-	}
-	catch(e) {
-		throw new Error("Read local config fail");
-		return false;
-	}
-
-	return false;
+	return utils.readConfig("", isJs);
 };
 
 /**
@@ -140,26 +125,24 @@ KitPlugin.prototype.install = function(opts) {
 		inquirerConfig
 	).then((answers) => {
 		// init config
-		answers.webserver = "//localhost:9000/";
-		answers.cdn = answers.cdn || answers.webserver;
+		answers.webserver = answers.webserver || "//localhost:9000/";
+		answers.cdn = answers.cdn || "//localhost:8000/";
 		answers.port = answers.port || 9000; 
 		answers.route = answers.route || "/";
 
 		config = _.merge({}, answers);
-
-		let newConfig = {
-			kit: kit,
-			config: config
-		};
+		config.kit = kit;
 
 		// replace config value in template
-		configTemplate = this.processTemplate(configTemplate, newConfig);
+		configTemplate = this.processTemplate(configTemplate, config);
 
 		// copy template files
 		this.copyFiles(kitPath, folder, configTemplate);
 
-		// create config file, for example in ./.steamer/steamer-react.js
+		// create config file, for example in ./.steamer/steamer-plugin-kit.js
 		this.createLocalConfig(kit, folder, config);
+
+		console.log(kit + " install success");
 	});
 };
 
@@ -171,7 +154,6 @@ KitPlugin.prototype.update = function(opts) {
 	let kit = opts.kit,
 		kitPath = opts.kitPath,
 		folder = opts.folder,
-		localConfigFile = opts.localConfigFile,
 		localConfig = opts.localConfig,
 		bkFiles = opts.bkFiles;
 
@@ -189,6 +171,8 @@ KitPlugin.prototype.update = function(opts) {
 KitPlugin.prototype.init = function() {
 
 	try {
+		var localConfig = null;
+
 		let argv = this.argv;
 		let kit = null,
 			kitPath = null,	  
@@ -199,49 +183,47 @@ KitPlugin.prototype.init = function() {
 
 		if (isInstall && isInstall !== true) {
 			kit = prefix + isInstall;  				 // kit name, for example, steamer-react
-			kitPath = path.join(node_modules, kit);  // steamer-react global module
+			kitPath = path.join(utils.globalNodeModules, kit);  // steamer-react global module
 			folder = argv.path || argv.p || kit;	// target folder
 
 			if (fs.existsSync(folder)) {
 				throw new Error(folder + " has existed.");  // avoid duplicate folder
 			}
 		}
-		else if (isUpdate && isUpdate !== true) {
-			kit = prefix + isUpdate;
-			kitPath = path.join(node_modules, kit);
+		else if (isUpdate) {
+			localConfig = this.readLocalConfig();
+			kit = localConfig.kit || null;
+			kitPath = path.join(utils.globalNodeModules, kit);
 			folder = path.resolve();
 		}
 
-		// local config, for example in .steamer/steamer-react.js
-		let localConfigFile = path.join(folder, ".steamer/" + kit + ".js"),
-			bkFiles = ["tools", "README.md", "package.json"]; // backup files
+		let bkFiles = ["tools", "README.md", "package.json"]; // backup files
 		/**
 		 * // config example
-		   {
-			    "kit": "steamer-react",
+		   module.exports = {
+			    "plugin": "steamer-plugin-kit",
 			    "config": {
 			        "webserver": "//localhost:9000/",
-			        "cdn": "//localhost:9000/",
+			        "cdn": "//localhost:8000/",
 			        "port": 9000,
-			        "route": "/"
+			        "route": "/",
+			        "kit": "steamer-react"
 			    }
-			} 
+			}
 		*/
-		let localConfig = this.readLocalConfig(folder, kit, localConfigFile);
 
 		let opts = {
 			kit,
 			kitPath,
 			folder,
-			localConfigFile,
 			localConfig,
 			bkFiles
 		};
 
-		if (localConfig && isUpdate) {
+		if (isUpdate) {
 			this.update(opts);
 		}
-		else {
+		else if (isInstall) {
 			this.install(opts);
 		}
 	}

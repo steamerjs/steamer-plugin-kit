@@ -25,9 +25,9 @@ steamer kit -i <starterkit>
 
 cd <targetPath>
 
-steamer kit --update <starterkit>
+steamer kit --update
 // or
-steamer kit -u <starterkit>
+steamer kit -u
 
 // backup files will be under backup folder in the order of date. src won't be backed up
 
