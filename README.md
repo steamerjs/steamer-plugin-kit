@@ -4,7 +4,7 @@ manage starter kit
 
 ### Installation
 ```javascript
-npm i -g steamer-cli
+npm i -g steamerjs
 
 npm i -g steamer-plugin-kit
 ```
