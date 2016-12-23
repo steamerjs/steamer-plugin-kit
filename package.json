@@ -3,7 +3,14 @@
   "version": "0.0.5",
   "description": "steamer-plugin-kit",
   "main": "index.js",
-  "scripts": {},
+  "bin": "index.js",
+  "scripts": {
+    "lint": "eslint index.js",
+    "test": "npm run lint&&jasmine"
+  },
+  "eslintConfig": {
+    "extends": "./config/eslint-config.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SteamerTeam/steamer-plugin-kit.git"
