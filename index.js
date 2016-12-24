@@ -94,7 +94,6 @@ KitPlugin.prototype.init = function() {
 KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, tpl) {
 
 	cpyFiles.map((item) => {
-		console.log(item);
 		fs.copySync(path.join(kitPath, item), path.join(folder, item));
 	});
 	
@@ -218,6 +217,7 @@ KitPlugin.prototype.install = function(opts) {
 
 	try {
 		inquirerConfig = require(kit);
+		inquirerConfig = inquirerConfig.options;
 	}
 	catch(e) {
 		throw new Error("The kit " + kit + " is not installed");
