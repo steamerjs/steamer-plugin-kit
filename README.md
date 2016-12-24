@@ -34,10 +34,10 @@ steamer kit -u
 ```
 
 ### Develop
-```javascript
-// In command 1
-gulp dev
+```
+// link the module to global path
+npm link
 
-// In command 2
-./node_modules/.bin/steamer kit react steamer-react
+// go through test cases
+npm test
 ```
