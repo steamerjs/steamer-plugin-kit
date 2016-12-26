@@ -43,12 +43,19 @@ KitPlugin.prototype.init = function() {
 			kitPath = path.join(utils.globalNodeModules, kit);
 			folder = path.resolve();
 		}
+
+		let kitConfig = {};
+
+		try {
+			kitConfig = require(kit);
+		}
+		catch(e) {
+			throw new Error("The kit " + kit + " is not installed");
+		}
 		
-		let pkgJson = utils.readPkgJson(path.join(kitPath, "package.json"));
+		let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
 
-		let cpyFiles = this.filterCopyFiles(pkgJson.files); // files needed to be copied
-
-		let bkFiles = this.filterBkFiles(pkgJson.files); // backup files
+		let bkFiles = this.filterBkFiles(kitConfig.files); // backup files
 
 		/**
 		 * // config example
@@ -69,6 +76,7 @@ KitPlugin.prototype.init = function() {
 			kitPath,
 			folder,
 			localConfig,
+			kitConfig,
 			bkFiles,
 			cpyFiles
 		};
@@ -211,17 +219,9 @@ KitPlugin.prototype.install = function(opts) {
 	let kit = opts.kit,
 		kitPath = opts.kitPath,
 		folder = opts.folder,
-		cpyFiles = opts.cpyFiles;
-
-	let inquirerConfig = null;
-
-	try {
-		inquirerConfig = require(kit);
-		inquirerConfig = inquirerConfig.options;
-	}
-	catch(e) {
-		throw new Error("The kit " + kit + " is not installed");
-	}
+		cpyFiles = opts.cpyFiles,
+		kitConfig = opts.kitConfig,
+		inquirerConfig = kitConfig.options;
 
 	let configTemplate = fs.readFileSync(path.join(kitPath, "/tools/config-template/config.js"), "utf-8");
 
