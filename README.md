@@ -47,5 +47,5 @@ npm test
 
 官方 Starter Kit:
 * react starter kit: [steamer-react](https://github.com/SteamerTeam/steamer-react/)
-* vue starter kit [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
-* 无框架 starter kit[steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
+* vue starter kit: [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
+* 无框架 starter kit: [steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
