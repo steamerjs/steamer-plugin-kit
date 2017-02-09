@@ -6,7 +6,8 @@
   "bin": "index.js",
   "scripts": {
     "lint": "eslint index.js",
-    "test": "npm run lint&&jasmine"
+    "pretest": "node ./specPlugin/run.js",
+    "test": "jasmine"
   },
   "eslintConfig": {
     "extends": "./config/eslint-config.js"
