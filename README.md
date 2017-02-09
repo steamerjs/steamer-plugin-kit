@@ -41,3 +41,11 @@ npm link
 // 运行测试用例
 npm test
 ```
+
+### Starter Kit 的例子
+符合 `steamer` 规范的 `Starter Kit`，可以参考 [steamer-example](https://github.com/SteamerTeam/steamer-example/)，并仿照规范，进行接入。
+
+官方 Starter Kit:
+* react starter kit: [steamer-react](https://github.com/SteamerTeam/steamer-react/)
+* vue starter kit [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
+* 无框架 starter kit[steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
