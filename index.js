@@ -55,17 +55,13 @@ KitPlugin.prototype.init = function() {
 		
 		let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
 
-		let bkFiles = this.filterBkFiles(kitConfig.files); // backup files
+		let bkFiles = ["package.json", "tools", "README.md"]; //this.filterBkFiles(kitConfig.files); // backup files
 
 		/**
-		 * // config example
+		 * // .steamer/steamer.plugin-kit.js
 		   module.exports = {
 			    "plugin": "steamer-plugin-kit",
 			    "config": {
-			        "webserver": "//localhost:9000/",
-			        "cdn": "//localhost:8000/",
-			        "port": 9000,
-			        "route": "/",
 			        "kit": "steamer-react"
 			    }
 			}
@@ -99,13 +95,14 @@ KitPlugin.prototype.init = function() {
  * @param  {String} folder  [target folder]
  * @param  {String} tpl     [config template]
  */
-KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, tpl) {
+KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
 
 	cpyFiles.map((item) => {
 		fs.copySync(path.join(kitPath, item), path.join(folder, item));
 	});
 	
-	fs.writeFileSync(path.join(folder, "tools/config.js"), tpl);
+	fs.ensureFileSync(path.join(folder, "config/steamer.config.js"));
+	fs.writeFileSync(path.join(folder, "config/steamer.config.js"), "module.exports = " + JSON.stringify(config, null, 4));
 };
 
 KitPlugin.prototype.filterCopyFiles = function(files) {
@@ -114,7 +111,9 @@ KitPlugin.prototype.filterCopyFiles = function(files) {
 
 	f = f.concat(files);
 
-	f.push("package.json");
+	f.push("package.json", "src", "tools", "config", "README.md");
+
+	f = _.uniq(f);
 
 	return f;
 };
@@ -158,29 +157,12 @@ KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
  * @param  {String} tpl     [config template]
  * @param  {Array} bkFiles  [files needed backup]
  */
-KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, tpl, bkFiles) {
+KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, bkFiles) {
 	
 	bkFiles.forEach((item, key) => {
 		fs.copySync(path.join(kitPath, item), path.join(folder, item));
 	});
 
-	fs.writeFileSync(path.join(folder, "tools/config.js"), tpl);
-};
-
-/**
- * [replace config value in config template]
- * @param  {String} tpl    [template string]
- * @param  {Object} config [config object]
- * @return {String}        [finish config template string]
- */
-KitPlugin.prototype.processTemplate = function(tpl, config) {
-	let configKeys = Object.keys(config);
-
-	configKeys.map((item, key) => {
-		tpl = tpl.replace("{{" + item + "}}", config[item]);
-	});
-
-	return tpl;
 };
 
 /**
@@ -189,8 +171,10 @@ KitPlugin.prototype.processTemplate = function(tpl, config) {
  * @param  {String} folder [target folder]
  * @param  {Object} config [config object]
  */
-KitPlugin.prototype.createLocalConfig = function(kit, folder, config) {
-	config.kit = kit;
+KitPlugin.prototype.createLocalConfig = function(kit, folder) {
+	let config = {
+		kit: kit
+	};
 
 	let isJs = true,
 		isForce = false;
@@ -223,8 +207,6 @@ KitPlugin.prototype.install = function(opts) {
 		kitConfig = opts.kitConfig,
 		inquirerConfig = kitConfig.options;
 
-	let configTemplate = fs.readFileSync(path.join(kitPath, "/tools/config-template/config.js"), "utf-8");
-
 	let config = null;
 
 	inquirer.prompt(
@@ -237,13 +219,9 @@ KitPlugin.prototype.install = function(opts) {
 		answers.route = answers.route || "/";
 
 		config = _.merge({}, answers);
-		config.kit = kit;
-
-		// replace config value in template
-		configTemplate = this.processTemplate(configTemplate, config);
 
 		// copy template files
-		this.copyFiles(kitPath, cpyFiles, folder, configTemplate);
+		this.copyFiles(kitPath, cpyFiles, folder, config);
 
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
 		this.createLocalConfig(kit, folder, config);
@@ -265,11 +243,8 @@ KitPlugin.prototype.update = function(opts) {
 
 	this.backupFiles(folder, bkFiles);	
 
-	let configTemplate = fs.readFileSync(path.join(kitPath, "tools/config-template/config.js"), "utf-8");
-	configTemplate = this.processTemplate(configTemplate, localConfig);
-
 	// copy files excluding src
-	this.copyFilterFiles(kitPath, folder, configTemplate, bkFiles);
+	this.copyFilterFiles(kitPath, folder, bkFiles);
 
 	console.log(kit + " update success");
 };

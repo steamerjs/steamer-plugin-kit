@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "0.0.7",
+  "version": "1.0.0",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
@@ -30,9 +30,11 @@
     "fs-extra": "^1.0.0",
     "inquirer": "^1.2.3",
     "lodash": "^4.17.2",
-    "steamer-pluginutils": "0.0.3"
+    "steamer-pluginutils": "1.0.4"
   },
   "devDependencies": {
-    "jasmine": "^2.4.0"
+    "bluebird": "^3.4.7",
+    "jasmine": "^2.5.0",
+    "robotjs": "^0.4.5"
   }
 }
