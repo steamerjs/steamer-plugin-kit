@@ -98,7 +98,12 @@ KitPlugin.prototype.init = function() {
 KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
 
 	cpyFiles.map((item) => {
-		fs.copySync(path.join(kitPath, item), path.join(folder, item));
+		try {
+			fs.copySync(path.join(kitPath, item), path.join(folder, item));
+		}
+		catch(e) {
+			utils.error(e);
+		}
 	});
 	
 	fs.ensureFileSync(path.join(folder, "config/steamer.config.js"));
