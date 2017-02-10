@@ -1,4 +1,4 @@
-### steamer-plugin-kit
+## steamer-plugin-kit
 
 starter kit 管理命令
 
@@ -49,3 +49,6 @@ npm test
 * react starter kit: [steamer-react](https://github.com/SteamerTeam/steamer-react/)
 * vue starter kit: [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
 * 无框架 starter kit: [steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
+
+### Changelog
+v1.0.1 安装及更新 starter kit
