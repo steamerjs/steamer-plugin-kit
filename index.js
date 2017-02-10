@@ -99,10 +99,15 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
 
 	cpyFiles.map((item) => {
 		try {
-			fs.copySync(path.join(kitPath, item), path.join(folder, item));
+			let srcFile = path.join(kitPath, item),
+				destFile = path.join(folder, item);
+			
+			if (fs.existsSync(srcFile)) {
+				fs.copySync(srcFile, destFile);
+			}
 		}
 		catch(e) {
-			utils.error(e);
+			console.log(e);
 		}
 	});
 	
