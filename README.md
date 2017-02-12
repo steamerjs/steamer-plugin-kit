@@ -53,3 +53,4 @@ npm test
 ### Changelog
 * v1.0.1 安装及更新 starter kit
 * v1.0.3 添加报错提示
+* v1.0.5 升级 `fs-extra`
