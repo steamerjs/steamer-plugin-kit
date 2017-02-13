@@ -1,16 +1,13 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
     "lint": "eslint index.js",
     "pretest": "node ./specPlugin/run.js",
-    "test": "jasmine"
-  },
-  "eslintConfig": {
-    "extends": "./config/eslint-config.js"
+    "test": "npm run lint && jasmine"
   },
   "repository": {
     "type": "git",
@@ -32,7 +29,7 @@
     "inquirer": "^1.2.3",
     "klaw-sync": "^1.0.2",
     "lodash": "^4.17.2",
-    "steamer-pluginutils": "1.0.6"
+    "steamer-pluginutils": "1.0.7"
   },
   "devDependencies": {
     "bluebird": "^3.4.7",

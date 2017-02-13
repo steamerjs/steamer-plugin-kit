@@ -1,2 +1,3 @@
 node_modules
 specPlugin/steamer-example/backup/
+.DS_Store

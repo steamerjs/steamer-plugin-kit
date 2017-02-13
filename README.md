@@ -39,6 +39,10 @@ steamer kit -u
 npm link
 
 // 运行测试用例
+npm i -g eslint // 安装eslint
+
+npm i -g steamer-example // 安装测试中使用到的steamer-example 脚手架
+
 npm test
 ```
 
@@ -54,3 +58,4 @@ npm test
 * v1.0.1 安装及更新 starter kit
 * v1.0.3 添加报错提示
 * v1.0.5 升级 `fs-extra`
+* v1.0.6 优化package.json的复制

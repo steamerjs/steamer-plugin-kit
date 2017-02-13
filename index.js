@@ -85,7 +85,7 @@ KitPlugin.prototype.init = function() {
 		}
 	}
 	catch(e) {
-		console.log(e.stack);
+		utils.error(e.stack);
 	}
 };
 
@@ -107,12 +107,46 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
 			}
 		}
 		catch(e) {
-			console.log(e);
+			utils.error(e.stack);
 		}
 	});
 	
 	fs.ensureFileSync(path.join(folder, "config/steamer.config.js"));
 	fs.writeFileSync(path.join(folder, "config/steamer.config.js"), "module.exports = " + JSON.stringify(config, null, 4));
+};
+
+/**
+ * [create package.json]
+ */
+KitPlugin.prototype.copyPkgJson = function(kitPath, folder) {
+	let pkgJson = {
+	  	"name": "",
+	  	"version": "",
+	  	"description": "",
+	  	"scripts": {
+	    
+	  	},
+	  	"author": "",
+	};
+
+	let pkgJsonFile = path.resolve(kitPath, "package.json");
+	
+	let pkgJsonSrc = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8"));
+
+	pkgJson.name = pkgJsonSrc.name;
+	pkgJson.version = pkgJsonSrc.version;
+	pkgJson.main = pkgJsonSrc.main || '',
+	pkgJson.bin = pkgJsonSrc.bin || '';
+	pkgJson.description = pkgJsonSrc.description || '';
+	pkgJson.repository = pkgJsonSrc.repository || '';
+	pkgJson.scripts = pkgJsonSrc.scripts;
+	pkgJson.author = pkgJsonSrc.author || '';
+	pkgJson.dependencies = pkgJsonSrc.dependencies || {};
+	pkgJson.devDependencies = pkgJsonSrc.devDependencies || {};
+	pkgJson.peerDependencies = pkgJsonSrc.peerDependencies || {};
+	pkgJson.engines = pkgJsonSrc.engines || {};
+
+	fs.writeFileSync(path.join(folder, "package.json"), JSON.stringify(pkgJson, null, 4));
 };
 
 KitPlugin.prototype.filterCopyFiles = function(files) {
@@ -121,7 +155,7 @@ KitPlugin.prototype.filterCopyFiles = function(files) {
 
 	f = f.concat(files);
 
-	f.push("package.json", "src", "tools", "config", "README.md");
+	f.push("src", "tools", "config", "README.md");
 
 	f = _.uniq(f);
 
@@ -154,7 +188,7 @@ KitPlugin.prototype.filterBkFiles = function(files) {
  */
 KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
 	let destFolder = "backup/" + Date.now();
-	bkFiles.forEach((item, key) => {
+	bkFiles.forEach((item) => {
 		fs.copySync(path.join(folder, item), path.join(folder, destFolder, item));
 		fs.removeSync(path.join(folder, item));
 	});
@@ -169,7 +203,7 @@ KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
  */
 KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, bkFiles) {
 	
-	bkFiles.forEach((item, key) => {
+	bkFiles.forEach((item) => {
 		fs.copySync(path.join(kitPath, item), path.join(folder, item));
 	});
 
@@ -198,7 +232,7 @@ KitPlugin.prototype.createLocalConfig = function(kit, folder) {
  * @param  {String} configFile [local config file]
  * @return {Boolean / Object}            [config value]
  */
-KitPlugin.prototype.readLocalConfig = function(folder) {
+KitPlugin.prototype.readLocalConfig = function() {
 	let isJs = true;
 
 	return utils.readConfig("", isJs);
@@ -233,10 +267,12 @@ KitPlugin.prototype.install = function(opts) {
 		// copy template files
 		this.copyFiles(kitPath, cpyFiles, folder, config);
 
+		this.copyPkgJson(kitPath, folder);
+
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
 		this.createLocalConfig(kit, folder, config);
 
-		console.log(kit + " install success");
+		utils.info(kit + " install success");
 	});
 };
 
@@ -248,7 +284,6 @@ KitPlugin.prototype.update = function(opts) {
 	let kit = opts.kit,
 		kitPath = opts.kitPath,
 		folder = opts.folder,
-		localConfig = opts.localConfig,
 		bkFiles = opts.bkFiles;
 
 	this.backupFiles(folder, bkFiles);	
@@ -256,7 +291,9 @@ KitPlugin.prototype.update = function(opts) {
 	// copy files excluding src
 	this.copyFilterFiles(kitPath, folder, bkFiles);
 
-	console.log(kit + " update success");
+	this.copyPkgJson(kitPath, folder);
+
+	utils.info(kit + " update success");
 };
 
 
