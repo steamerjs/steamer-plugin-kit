@@ -31,6 +31,11 @@ steamer kit -u
 
 // 备份的文件会在 backup 目录下面，用时间戳命令的文件夹保存，src 目录不会被备份
 
+// 如果你是从github上直接将steamer体系的脚手架clone下来，而你又想升级，可以指定某个脚手架名字，如：
+steamer kit --update react
+// or
+steamer kit -u react
+
 ```
 
 ### 开发
@@ -59,3 +64,4 @@ npm test
 * v1.0.3 添加报错提示
 * v1.0.5 升级 `fs-extra`
 * v1.0.6 优化package.json的复制
+* v1.1.0 支持从github clone下来的steamer脚手架升级

@@ -1,12 +1,12 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "1.0.6",
+  "version": "1.1.0",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
     "lint": "eslint index.js",
-    "pretest": "node ./specPlugin/run.js",
+    "pretest": "node ./specPlugin/run.js && node ./specPlugin/run1.js",
     "test": "npm run lint && jasmine"
   },
   "repository": {

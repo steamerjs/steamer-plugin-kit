@@ -38,7 +38,6 @@ new Promise((resolve, reject) => {
 
 }).then(() => {
 	// change directory
-	
 	process.chdir('./steamer-example');
 
 	var kit = new KIT({

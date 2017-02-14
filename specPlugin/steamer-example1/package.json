@@ -1,0 +1,24 @@
+{
+    "name": "steamer-example",
+    "version": "1.2.0",
+    "description": "steamer starter kit example",
+    "scripts": {
+        "start": "node ./tools/start.js",
+        "dist": "node ./tools/dist.js",
+        "test": "",
+        "lint": ""
+    },
+    "author": "SteamerTeam",
+    "main": "./.steamer/steamer-example.js",
+    "bin": "",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/SteamerTeam/steamer-example.git"
+    },
+    "dependencies": {},
+    "devDependencies": {},
+    "peerDependencies": {},
+    "engines": {
+        "node": ">=5.0.0"
+    }
+}

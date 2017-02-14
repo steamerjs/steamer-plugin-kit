@@ -43,4 +43,26 @@ describe("steamer-plugin-ak", function() {
         expect(bkFiles.includes('tools')).toBe(true);
 
     });
+
+    it("=> update without .steamer/steamer-plugin-kit", function() {
+
+        let bkFolder = path.resolve('specPlugin/steamer-example/backup'),
+            bksubFolder = fs.readdirSync(bkFolder);
+
+        bksubFolder = path.join(bkFolder, bksubFolder[0]);
+
+        let bkFiles = fs.readdirSync(bksubFolder);
+
+        expect(bkFiles.includes('README.md')).toBe(true);
+        expect(bkFiles.includes('package.json')).toBe(true);
+        expect(bkFiles.includes('tools')).toBe(true);
+
+        let kitConfig = require("../specPlugin/steamer-example1/.steamer/steamer-plugin-kit") || {};
+
+        kitConfig.config = kitConfig.config || {};
+
+        expect(kitConfig.plugin).toBe("steamer-plugin-kit");
+        expect(kitConfig.config.kit).toBe("steamer-example");
+
+    });
 });

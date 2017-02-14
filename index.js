@@ -39,6 +39,19 @@ KitPlugin.prototype.init = function() {
 		}
 		else if (isUpdate) {
 			localConfig = this.readLocalConfig();
+			// 支持没有.steamer/steamer-plugin-kit.js配置的steamer脚手架升级
+			if (isUpdate && isUpdate !== true) {
+				localConfig = {};
+				localConfig.kit = prefix + isUpdate;
+
+				this.createLocalConfig(localConfig.kit, path.resolve());
+
+			}
+
+			if (!localConfig || !localConfig.kit) {
+				throw new Error("The kit config is not found in .steamer folder");
+			}
+
 			kit = localConfig.kit || null;
 			kitPath = path.join(utils.globalNodeModules, kit);
 			folder = path.resolve();
@@ -221,7 +234,7 @@ KitPlugin.prototype.createLocalConfig = function(kit, folder) {
 	};
 
 	let isJs = true,
-		isForce = false;
+		isForce = true;
 
 	utils.createConfig(folder, config, isJs, isForce);
 };
@@ -270,7 +283,7 @@ KitPlugin.prototype.install = function(opts) {
 		this.copyPkgJson(kitPath, folder);
 
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
-		this.createLocalConfig(kit, folder, config);
+		this.createLocalConfig(kit, folder);
 
 		utils.info(kit + " install success");
 	});
