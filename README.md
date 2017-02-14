@@ -21,7 +21,7 @@ npm i -g steamer-react
 
 * 部署脚手架
 
-通过 steamer 命令，将 starter kit 拷贝到指定目录，并初始化
+通过 `steamer` 命令，将 `starter kit` 拷贝到指定目录，并初始化
 
 ```javascript
 steamer kit --install react --path project
