@@ -1,6 +1,6 @@
 ## steamer-plugin-kit
 
-starter kit 管理命令
+`starter kit` 管理命令
 
 ### 安装
 ```javascript
@@ -11,10 +11,10 @@ npm i -g steamer-plugin-kit
 
 ### Usage
 ```javascript
-// 首先，将 starter kit 进行全局安装
+// 首先，将 `starter kit` 进行全局安装
 npm i -g stearm-react
 
-// 然后，通过 steamer 命令，将 starter kit 拷贝到指定目录，并初始化
+// 然后，通过 `steamer` 命令，将 `starter kit` 拷贝到指定目录，并初始化
 steamer kit --install <starterkit> --path <targetPath> 
 // 或
 steamer kit -i <starterkit> -p <targetPath>
