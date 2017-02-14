@@ -29,9 +29,10 @@ KitPlugin.prototype.init = function() {
 			isUpdate = argv.update || argv.u || false;
 
 		if (isInstall && isInstall !== true) {
-			kit = prefix + isInstall;  				 // kit name, for example, steamer-react
+			isInstall = this.getKitName(isInstall);
+			kit = isInstall;  // kit name, for example, steamer-react
 			kitPath = path.join(utils.globalNodeModules, kit);  // steamer-react global module
-			folder = argv.path || argv.p || kit;	// target folder
+			folder = argv.path || argv.p || this.getFolderName(kit);	// target folder
 
 			if (fs.existsSync(folder)) {
 				throw new Error(folder + " has existed.");  // avoid duplicate folder
@@ -42,7 +43,7 @@ KitPlugin.prototype.init = function() {
 			// 支持没有.steamer/steamer-plugin-kit.js配置的steamer脚手架升级
 			if (isUpdate && isUpdate !== true) {
 				localConfig = {};
-				localConfig.kit = prefix + isUpdate;
+				localConfig.kit = this.getKitName(isUpdate);
 
 				this.createLocalConfig(localConfig.kit, path.resolve());
 
@@ -100,6 +101,38 @@ KitPlugin.prototype.init = function() {
 	catch(e) {
 		utils.error(e.stack);
 	}
+};
+
+/**
+ * [get kit name]
+ * @param  {String} pkg [starter kit name]
+ * @return {String}     [kit name]
+ */
+KitPlugin.prototype.getKitName = function(pkg) {
+	let pkgArr = pkg.split('/');
+
+	if (pkgArr.length === 2) {
+		pkgArr[1] = (!!~pkgArr[1].indexOf(prefix)) ? pkgArr[1] : prefix + pkgArr[1];
+	}
+	else if (pkgArr.length === 1) {
+		pkgArr[0] = (!!~pkgArr[0].indexOf(prefix)) ? pkgArr[0] : prefix + pkgArr[0];
+	}
+	
+	pkg = pkgArr.join('/');
+
+	return pkg;
+};
+
+KitPlugin.prototype.getFolderName = function(kit) {
+	let pkgArr = kit.split('/');
+
+	if (pkgArr.length === 2) {
+		return pkgArr[1];
+	}
+	else if (pkgArr.length === 1) {
+		return pkgArr[0];
+	}
+
 };
 
 /**
