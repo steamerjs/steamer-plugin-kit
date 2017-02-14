@@ -3,12 +3,14 @@
     "version": "1.2.0",
     "description": "steamer starter kit example",
     "scripts": {
-        "start": "node ./tools/start.js",
         "dist": "node ./tools/dist.js",
-        "test": "",
-        "lint": ""
+        "lint": "",
+        "start": "node ./tools/start.js",
+        "test": ""
     },
-    "author": "SteamerTeam",
+    "author": {
+        "name": "SteamerTeam"
+    },
     "main": "./.steamer/steamer-example.js",
     "bin": "",
     "repository": {
