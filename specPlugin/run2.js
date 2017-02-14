@@ -22,20 +22,23 @@ new Promise((resolve, reject) => {
 	robot.keyTap("enter");
 
 	setTimeout(() => {
+		robot.typeString("//localhost:8001/");
 		robot.keyTap("enter");
 	}, 100);
 
 	setTimeout(() => {
-		robot.keyTap("enter");
-	}, 200);
-
-	setTimeout(() => {
+		robot.typeString(9001);
 		robot.keyTap("enter");
 	}, 300);
 
 	setTimeout(() => {
+		robot.typeString("/news/");
+		robot.keyTap("enter");
+	}, 500);
+
+	setTimeout(() => {
 		resolve();
-	}, 400);
+	}, 1000);
 
 }).then(() => {
 	process.chdir('./steamer-react-hy');

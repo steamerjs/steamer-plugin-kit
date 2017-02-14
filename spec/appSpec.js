@@ -26,6 +26,12 @@ describe("steamer-plugin-ak", function() {
         expect(kitConfig.plugin).toBe("steamer-plugin-kit");
         expect(kitConfig.config.kit).toBe("steamer-example");
 
+        let projectConfig = require("../specPlugin/steamer-example/config/steamer.config.js") || {};
+
+        expect(projectConfig.webserver).toBe('//localhost:9000/');
+        expect(projectConfig.cdn).toBe('//localhost:8000/');
+        expect(projectConfig.port).toBe(9000);
+        expect(projectConfig.route).toBe('/');
   	});
 
     it("=> update", function() {
@@ -87,6 +93,13 @@ describe("steamer-plugin-ak for scoped package", function() {
 
         expect(kitConfig.plugin).toBe("steamer-plugin-kit");
         expect(kitConfig.config.kit).toBe("@tencent/steamer-react-hy");
+
+        let projectConfig = require("../specPlugin/steamer-react-hy/config/steamer.config.js") || {};
+
+        expect(projectConfig.webserver).toBe('//localhost:9001/');
+        expect(projectConfig.cdn).toBe('//localhost:8001/');
+        expect(projectConfig.port).toBe('9001');
+        expect(projectConfig.route).toBe('/news/');
 
     });
 

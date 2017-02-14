@@ -40,7 +40,7 @@ steamer kit -i react
 steamer kit -i @tencent/react
 ```
 
-这种情况下，它也会把文件拷贝到 steamer-react 目录下。 
+这种情况下，它也会把文件拷贝到 `steamer-react` 目录下。 
 
 
 
@@ -52,7 +52,7 @@ steamer kit -i @tencent/react
 npm update -g steamer-react
 ```
 
-然后进行项目目录中，进行更新
+然后进入项目目录中，进行更新
 
 ```javascript
 cd project
