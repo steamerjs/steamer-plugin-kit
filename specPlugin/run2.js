@@ -15,6 +15,7 @@ new Promise((resolve, reject) => {
 	var kit = new KIT({
 	    install: "@tencent/react-hy"
 	});
+	kit.disableNpmInstall = true;
 
 	kit.init();
 

@@ -4,7 +4,8 @@ const path = require('path'),
 	  fs = require('fs-extra'),
 	  inquirer = require('inquirer'),
 	  _ = require('lodash'),
-	  pluginUtils = require('steamer-pluginutils');
+	  pluginUtils = require('steamer-pluginutils'),
+	  spawn = require('cross-spawn');
 
 var utils = new pluginUtils();
 utils.pluginName = "steamer-plugin-kit";
@@ -13,6 +14,7 @@ const prefix = "steamer-";
 
 function KitPlugin(argv) {
 	this.argv = argv;
+	this.disableNpmInstall = false;
 }
 
 KitPlugin.prototype.init = function() {
@@ -338,7 +340,27 @@ KitPlugin.prototype.install = function(opts) {
 		this.createLocalConfig(kit, folder);
 
 		utils.info(kit + " install success");
+
+		this.installPkg(folder);
+
 	});
+};
+
+/**
+ * [run npm install]
+ * @param  {String} folder [destination folder]
+ */
+KitPlugin.prototype.installPkg = function(folder) {
+
+	if (this.disableNpmInstall) {
+		return;
+	}
+
+	utils.info("we run npm install for you");
+	
+	process.chdir(path.resolve(folder));
+
+	spawn.sync('npm', ['install'], { stdio: 'inherit' });
 };
 
 /**

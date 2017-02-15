@@ -42,6 +42,7 @@ steamer kit -i @tencent/react
 
 这种情况下，它也会把文件拷贝到 `steamer-react` 目录下。 
 
+脚手架部署完成后，它会帮你自动进入项目中，运行 `npm install`。你也可以通过中止命令，选用其它安装工具例如 `yarn` 进行依赖安装。
 
 
 * 更新项目脚手架
@@ -116,3 +117,4 @@ npm test
 * v1.0.6 优化package.json的复制
 * v1.1.0 支持从github clone下来的steamer脚手架升级
 * v1.1.1 支持npm安装scope package，如@tencent/xxx
+* v1.1.2 支持安装脚手架成功后，运行npm install

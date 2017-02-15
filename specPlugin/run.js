@@ -15,6 +15,7 @@ new Promise((resolve, reject) => {
 	var kit = new KIT({
 	    install: "example"
 	});
+	kit.disableNpmInstall = true;
 
 	kit.init();
 
