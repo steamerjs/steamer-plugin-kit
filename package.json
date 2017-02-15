@@ -6,7 +6,7 @@
   "bin": "index.js",
   "scripts": {
     "lint": "eslint index.js",
-    "pretest": "node ./specPlugin/run.js && node ./specPlugin/run1.js",
+    "pretest": "node ./specPlugin/run.js && node ./specPlugin/run1.js && node ./specPlugin/run2.js && node ./specPlugin/run3.js",
     "test": "npm run lint && jasmine"
   },
   "repository": {

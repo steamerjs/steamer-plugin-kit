@@ -1,6 +1,6 @@
 ## steamer-plugin-kit
 
-`starter kit` 管理命令
+starter kit 管理命令
 
 ### 安装
 ```javascript
@@ -9,41 +9,91 @@ npm i -g steamerjs
 npm i -g steamer-plugin-kit
 ```
 
-### Usage
+### 使用
+
+* 全局安装你想用的脚手架
+
 ```javascript
-// 首先，将 `starter kit` 进行全局安装
-npm i -g stearm-react
 
-// 然后，通过 `steamer` 命令，将 `starter kit` 拷贝到指定目录，并初始化
-steamer kit --install <starterkit> --path <targetPath> 
+npm i -g steamer-react
+
+```
+
+* 部署脚手架
+
+通过 `steamer` 命令，将 `starter kit` 拷贝到指定目录，并初始化
+
+```javascript
+steamer kit --install react --path project
 // 或
-steamer kit -i <starterkit> -p <targetPath>
+steamer kit -i react -p project
 // 或
-steamer kit -i <starterkit>
+steamer kit -i react
+```
 
-// 若需要升级，先进行项目文件夹，然后通过命令进行升级和必要文件的备份
+这样，会自动帮你将脚手架 `steamer-react` (输入命令时，允许省略 "steamer-" ) 的内容拷贝到 `project` 目录下。如果你不指定 `project` 目录，那它会自动生成到与脚手架同名的目录中。
 
-cd <targetPath>
+
+你也可以安装在指定命名空间下的脚手架，如：
+
+```javascript
+steamer kit -i @tencent/react
+```
+
+这种情况下，它也会把文件拷贝到 `steamer-react` 目录下。 
+
+
+
+* 更新项目脚手架
+
+如果脚手架有更新，首先全局更新脚手架
+
+```javascript
+npm update -g steamer-react
+```
+
+然后进入项目目录中，进行更新
+
+```javascript
+cd project
 
 steamer kit --update
-// or
+// 或
 steamer kit -u
-
-// 备份的文件会在 backup 目录下面，用时间戳命令的文件夹保存，src 目录不会被备份
-
-// 如果你是从github上直接将steamer体系的脚手架clone下来，而你又想升级，可以指定某个脚手架名字，如：
-steamer kit --update react
-// or
-steamer kit -u react
-
 ```
+
+如果你是从github上直接将steamer体系的脚手架clone下来，而你又想升级，可以指定某个脚手架名字，如：
+
+```javascript
+cd project
+
+steamer kit --update react
+或
+steamer kit -u react
+```
+
+该命令主要是更新项目中的 `package.json`， `readme`， 和 `tools`文件夹，然后将这三个旧的文件（夹）备份到 backup 目录下（有时间戳的文件夹），其余文件保持不变。如果有改动到tools下面构建相关的逻辑，可能需要手动进行更新。
+
 
 ### 开发
-```
-// 将此模块链接到全局下
-npm link
 
-// 运行测试用例
+将此模块链接到全局下
+
+```javascript
+npm link
+```
+
+安装以下 `scoped package`
+
+```javascript
+cd specPlugin/scope-package/steamer-react-hy
+
+npm link
+```
+
+运行测试用例
+
+```javascript
 npm i -g eslint // 安装eslint
 
 npm i -g steamer-example // 安装测试中使用到的steamer-example 脚手架
@@ -65,3 +115,4 @@ npm test
 * v1.0.5 升级 `fs-extra`
 * v1.0.6 优化package.json的复制
 * v1.1.0 支持从github clone下来的steamer脚手架升级
+* v1.1.1 支持npm安装scope package，如@tencent/xxx

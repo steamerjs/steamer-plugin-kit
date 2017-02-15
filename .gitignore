@@ -1,5 +1,4 @@
 node_modules
-specPlugin/steamer-example/backup/
+backup
 .DS_Store
 npm-debug.log
-backup
