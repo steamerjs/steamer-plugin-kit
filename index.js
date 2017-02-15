@@ -36,9 +36,17 @@ KitPlugin.prototype.init = function() {
 			if (fs.existsSync(folder)) {
 				throw new Error(folder + " has existed.");  // avoid duplicate folder
 			}
+
+			this.getPkgJson(kitPath);
 		}
 		else if (isUpdate) {
 			localConfig = this.readLocalConfig();
+			kit = localConfig.kit || null;
+			kitPath = path.join(utils.globalNodeModules, kit);
+			folder = path.resolve();
+
+			this.getPkgJson(kitPath);
+
 			// 支持没有.steamer/steamer-plugin-kit.js配置的steamer脚手架升级
 			if (isUpdate && isUpdate !== true) {
 				localConfig = {};
@@ -52,9 +60,6 @@ KitPlugin.prototype.init = function() {
 				throw new Error("The kit config is not found in .steamer folder");
 			}
 
-			kit = localConfig.kit || null;
-			kitPath = path.join(utils.globalNodeModules, kit);
-			folder = path.resolve();
 		}
 
 		let kitConfig = {};
@@ -129,7 +134,21 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
 };
 
 /**
+ * [get info from package.json]
+ * @param  {String} kitPath [starter kit global path]
+ */
+KitPlugin.prototype.getPkgJson = function(kitPath) {
+
+	let pkgJsonFile = path.resolve(kitPath, "package.json");
+	
+	this.pkgJson = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8"));
+
+};
+
+/**
  * [create package.json]
+ * @param  {String} kitPath [starter kit global path]
+ * @param  {String} folder [new package.json destination folder]
  */
 KitPlugin.prototype.copyPkgJson = function(kitPath, folder) {
 	let pkgJson = {
@@ -141,10 +160,8 @@ KitPlugin.prototype.copyPkgJson = function(kitPath, folder) {
 	  	},
 	  	"author": "",
 	};
-
-	let pkgJsonFile = path.resolve(kitPath, "package.json");
 	
-	let pkgJsonSrc = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8"));
+	let pkgJsonSrc = this.pkgJson;
 
 	pkgJson.name = pkgJsonSrc.name;
 	pkgJson.version = pkgJsonSrc.version;
@@ -229,8 +246,10 @@ KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, bkFiles) {
  * @param  {Object} config [config object]
  */
 KitPlugin.prototype.createLocalConfig = function(kit, folder) {
+
 	let config = {
-		kit: kit
+		kit: kit,
+		version: this.pkgJson.version
 	};
 
 	let isJs = true,
