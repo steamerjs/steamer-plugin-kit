@@ -320,9 +320,19 @@ KitPlugin.prototype.install = function(opts) {
 
 	let config = null;
 
+	inquirerConfig.push({
+        type: 'input',
+        name: 'npm',
+        message: 'npm install command(npm, cnpm, yarn, tnpm, etc)',
+        default: 'npm'
+    });
+
 	inquirer.prompt(
 		inquirerConfig
 	).then((answers) => {
+		var npm = answers.npm;
+		delete answers['npm'];
+
 		// init config
 		answers.webserver = answers.webserver || "//localhost:9000/";
 		answers.cdn = answers.cdn || "//localhost:8000/";
@@ -341,7 +351,7 @@ KitPlugin.prototype.install = function(opts) {
 
 		utils.info(kit + " install success");
 
-		this.installPkg(folder);
+		this.installPkg(folder, npm);
 
 	});
 };
@@ -349,18 +359,23 @@ KitPlugin.prototype.install = function(opts) {
 /**
  * [run npm install]
  * @param  {String} folder [destination folder]
+ * @param  {String} folder [destination folder]
  */
-KitPlugin.prototype.installPkg = function(folder) {
+KitPlugin.prototype.installPkg = function(folder, npmCmd = "npm") {
 
 	if (this.disableNpmInstall) {
-		return;
+		return folder + '-' + npmCmd;
 	}
 
-	utils.info("we run npm install for you");
+	utils.info("we run " + npmCmd + " install for you");
 	
 	process.chdir(path.resolve(folder));
 
-	spawn.sync('npm', ['install'], { stdio: 'inherit' });
+	let result = spawn.sync(npmCmd, ['install'], { stdio: 'inherit' });
+
+	if (result.error) {
+		utils.error('command ' + npmCmd + ' is not found or other error has occurred');
+	}
 };
 
 /**

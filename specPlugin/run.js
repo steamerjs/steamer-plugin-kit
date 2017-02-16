@@ -34,8 +34,12 @@ new Promise((resolve, reject) => {
 	}, 300);
 
 	setTimeout(() => {
-		resolve();
+		robot.keyTap("enter");
 	}, 400);
+
+	setTimeout(() => {
+		resolve();
+	}, 500);
 
 }).then(() => {
 	// change directory

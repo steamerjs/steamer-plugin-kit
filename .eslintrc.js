@@ -7,7 +7,7 @@ module.exports = {
     },
     "extends": "eslint:recommended",
     rules: {
-    	"indent": [2, 'tab', {SwitchCase: 1, VariableDeclarator: 1}],
+    	"indent": 0,
     	"no-console": 0,
         "no-redeclare": 1,
         "no-unused-vars": 1,

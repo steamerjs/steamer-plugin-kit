@@ -118,3 +118,4 @@ npm test
 * v1.1.0 支持从github clone下来的steamer脚手架升级
 * v1.1.1 支持npm安装scope package，如@tencent/xxx
 * v1.1.2 支持安装脚手架成功后，运行npm install
+* v1.1.3 支持询问使用哪种方式安装依赖(npm, cnpm, yarn, tnpm)

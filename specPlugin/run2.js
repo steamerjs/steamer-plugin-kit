@@ -38,6 +38,11 @@ new Promise((resolve, reject) => {
 	}, 500);
 
 	setTimeout(() => {
+		robot.typeString("npm");
+		robot.keyTap("enter");
+	}, 700);
+
+	setTimeout(() => {
 		resolve();
 	}, 1000);
 

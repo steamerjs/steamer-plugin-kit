@@ -1,7 +1,8 @@
 "use strict";
 
 const path = require('path'),
-	  fs = require('fs');
+	  fs = require('fs'),
+      KIT = require('../index');
 
 
 describe("steamer-plugin-ak", function() {
@@ -25,6 +26,7 @@ describe("steamer-plugin-ak", function() {
 
         expect(kitConfig.plugin).toBe("steamer-plugin-kit");
         expect(kitConfig.config.kit).toBe("steamer-example");
+        expect(kitConfig.config.version).toBe("1.2.0");
 
         let projectConfig = require("../specPlugin/steamer-example/config/steamer.config.js") || {};
 
@@ -32,6 +34,14 @@ describe("steamer-plugin-ak", function() {
         expect(projectConfig.cdn).toBe('//localhost:8000/');
         expect(projectConfig.port).toBe(9000);
         expect(projectConfig.route).toBe('/');
+
+        // test installPkg
+        var kit = new KIT({
+            install: "@tencent/react-hy"
+        });
+        kit.disableNpmInstall = true;
+
+        expect(kit.installPkg(path.resolve(), 'tnpm')).toBe(path.resolve() + '-tnpm');
   	});
 
     it("=> update", function() {
@@ -68,6 +78,7 @@ describe("steamer-plugin-ak", function() {
 
         expect(kitConfig.plugin).toBe("steamer-plugin-kit");
         expect(kitConfig.config.kit).toBe("steamer-example");
+        expect(kitConfig.config.version).toBe("1.2.0");
 
     });
 });
@@ -93,6 +104,7 @@ describe("steamer-plugin-ak for scoped package", function() {
 
         expect(kitConfig.plugin).toBe("steamer-plugin-kit");
         expect(kitConfig.config.kit).toBe("@tencent/steamer-react-hy");
+        expect(kitConfig.config.version).toBe("1.8.5");
 
         let projectConfig = require("../specPlugin/steamer-react-hy/config/steamer.config.js") || {};
 
@@ -100,6 +112,14 @@ describe("steamer-plugin-ak for scoped package", function() {
         expect(projectConfig.cdn).toBe('//localhost:8001/');
         expect(projectConfig.port).toBe('9001');
         expect(projectConfig.route).toBe('/news/');
+
+        // test installPkg
+        var kit = new KIT({
+            install: "@tencent/react-hy"
+        });
+        kit.disableNpmInstall = true;
+
+        expect(kit.installPkg(path.resolve(), 'yarn')).toBe(path.resolve() + '-yarn');
 
     });
 
@@ -137,6 +157,7 @@ describe("steamer-plugin-ak for scoped package", function() {
 
         expect(kitConfig.plugin).toBe("steamer-plugin-kit");
         expect(kitConfig.config.kit).toBe("@tencent/steamer-react-hy");
+        expect(kitConfig.config.version).toBe("1.8.5");
 
     });
 });
