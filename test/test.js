@@ -32,7 +32,7 @@ function userInputEnd(cb, order) {
 }
 
 
-beforeEach(() => {
+beforeEach(function() {
 	process.chdir(PROJECT);
 });
 
@@ -40,7 +40,7 @@ describe("install", function() {
 
 	this.timeout(10000);
 
-	before(() => {
+	before(function() {
 		fs.emptyDirSync(PROJECT);
 
 		linkKit("steamer-example1", "link");
@@ -204,7 +204,7 @@ describe("update", function() {
 
 	this.timeout(10000);
 
-	before(() => {
+	before(function() {
 
 		linkKit("steamer-example1", "unlink");
 		linkKit("steamer-example2", "unlink");
