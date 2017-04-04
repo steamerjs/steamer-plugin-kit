@@ -7,11 +7,10 @@ const path = require('path'),
 	  pluginUtils = require('steamer-pluginutils'),
 	  spawnSync = require('child_process').spawnSync;
 
-var utils = new pluginUtils("steamer-plugin-kit");
-const prefix = "steamer-";
-
 function KitPlugin(argv) {
 	this.argv = argv;
+	this.utils = new pluginUtils("steamer-plugin-kit");
+	this.prefix = "steamer-";
 }
 
 KitPlugin.prototype.init = function() {
@@ -27,12 +26,12 @@ KitPlugin.prototype.init = function() {
 		isUpdate = argv.update || argv.u || false;
 
 	console.log("global node_modules===========");
-	console.log(utils.globalNodeModules);
-	
+	console.log(this.utils.globalNodeModules);
+
 	if (isInstall && isInstall !== true) {
 		isInstall = this.getKitName(isInstall);
 		kit = isInstall;  // kit name, for example, steamer-react
-		kitPath = path.join(utils.globalNodeModules, kit);  // steamer-react global module
+		kitPath = path.join(this.utils.globalNodeModules, kit);  // steamer-react global module
 		folder = argv.path || argv.p || this.getFolderName(kit);	// target folder
 
 		if (fs.existsSync(folder)) {
@@ -52,13 +51,13 @@ KitPlugin.prototype.init = function() {
 			localConfig.kit = this.getKitName(isUpdate);
 			kit = localConfig.kit;
 
-			kitPath = path.join(utils.globalNodeModules, kit);
+			kitPath = path.join(this.utils.globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 			
 			this.createLocalConfig(localConfig.kit, path.resolve());
 		}
 		else {
-			kitPath = path.join(utils.globalNodeModules, kit);
+			kitPath = path.join(this.utils.globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 		}
 
@@ -118,10 +117,10 @@ KitPlugin.prototype.getKitName = function(pkg) {
 	let pkgArr = pkg.split('/');
 
 	if (pkgArr.length === 2) {
-		pkgArr[1] = (!!~pkgArr[1].indexOf(prefix)) ? pkgArr[1] : prefix + pkgArr[1];
+		pkgArr[1] = (!!~pkgArr[1].indexOf(this.prefix)) ? pkgArr[1] : this.prefix + pkgArr[1];
 	}
 	else if (pkgArr.length === 1) {
-		pkgArr[0] = (!!~pkgArr[0].indexOf(prefix)) ? pkgArr[0] : prefix + pkgArr[0];
+		pkgArr[0] = (!!~pkgArr[0].indexOf(this.prefix)) ? pkgArr[0] : this.prefix + pkgArr[0];
 	}
 	
 	pkg = pkgArr.join('/');
@@ -159,7 +158,7 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
 			}
 		}
 		catch(e) {
-			utils.error(e.stack);
+			this.utils.error(e.stack);
 		}
 	});
 	
@@ -276,7 +275,7 @@ KitPlugin.prototype.createLocalConfig = function(kit, folder) {
 		version: this.pkgJson.version
 	};
 
-	utils.createConfig(config, {
+	this.utils.createConfig(config, {
 		folder: folder,
 		overwrite: true,
 	});
@@ -291,7 +290,7 @@ KitPlugin.prototype.createLocalConfig = function(kit, folder) {
 KitPlugin.prototype.readLocalConfig = function() {
 	let isJs = true;
 
-	return utils.readConfig("", isJs);
+	return this.utils.readConfig("", isJs);
 };
 
 /**
@@ -338,7 +337,7 @@ KitPlugin.prototype.install = function(opts) {
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
 		this.createLocalConfig(kit, folder);
 
-		utils.info(kit + " install success");
+		this.utils.info(kit + " install success");
 
 		this.installPkg(folder, npm);
 
@@ -352,14 +351,14 @@ KitPlugin.prototype.install = function(opts) {
  */
 KitPlugin.prototype.installPkg = function(folder, npmCmd = "npm") {
 
-	utils.info("we run " + npmCmd + " install for you");
+	this.utils.info("we run " + npmCmd + " install for you");
 	
 	process.chdir(path.resolve(folder));
 
 	let result = spawnSync(npmCmd, ['install'], { stdio: 'inherit' });
 
 	if (result.error) {
-		utils.error('command ' + npmCmd + ' is not found or other error has occurred');
+		this.utils.error('command ' + npmCmd + ' is not found or other error has occurred');
 	}
 };
 
@@ -380,7 +379,7 @@ KitPlugin.prototype.update = function(opts) {
 
 	this.copyPkgJson(folder);
 
-	utils.info(kit + " update success");
+	this.utils.info(kit + " update success");
 };
 
 module.exports = KitPlugin;
