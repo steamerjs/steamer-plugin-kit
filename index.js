@@ -5,7 +5,7 @@ const path = require('path'),
 	  inquirer = require('inquirer'),
 	  _ = require('lodash'),
 	  pluginUtils = require('steamer-pluginutils'),
-	  spawn = require('cross-spawn');
+	  spawnSync = require('child_process').spawnSync;
 
 var utils = new pluginUtils("steamer-plugin-kit");
 
@@ -353,7 +353,7 @@ KitPlugin.prototype.installPkg = function(folder, npmCmd = "npm") {
 	
 	process.chdir(path.resolve(folder));
 
-	let result = spawn.sync(npmCmd, ['install'], { stdio: 'inherit' });
+	let result = spawnSync(npmCmd, ['install'], { stdio: 'inherit' });
 
 	if (result.error) {
 		utils.error('command ' + npmCmd + ' is not found or other error has occurred');
