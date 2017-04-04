@@ -1,0 +1,40 @@
+{
+  "name": "@tencent/steamer-example2",
+  "version": "3.0.0",
+  "description": "steamer starter kit example",
+  "main": "./.steamer/steamer-example2.js",
+  "scripts": {
+    "start": "node ./tools/scrpit.js --mode=development",
+    "dist": "node ./tools/script.js --mode=production",
+    "test": "",
+    "lint": "",
+    "tpl": "node ./tools/template.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SteamerTeam/steamer-example.git"
+  },
+  "keywords": [
+    "steamer",
+    "starter kit",
+    "boilerplate"
+  ],
+  "author": "SteamerTeam",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SteamerTeam/steamer-example/issues"
+  },
+  "homepage": "https://github.com/SteamerTeam/steamer-example#readme",
+  "dependencies": {
+    
+  },
+  "devDependencies": {
+    
+  },
+  "peerDependencies": {
+    
+  },
+  "engines": {
+    "node": ">=5.0.0"
+  }
+}

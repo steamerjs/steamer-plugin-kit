@@ -7,106 +7,103 @@ const path = require('path'),
 	  pluginUtils = require('steamer-pluginutils'),
 	  spawn = require('cross-spawn');
 
-var utils = new pluginUtils();
-utils.pluginName = "steamer-plugin-kit";
+var utils = new pluginUtils("steamer-plugin-kit");
 
 const prefix = "steamer-";
 
 function KitPlugin(argv) {
 	this.argv = argv;
-	this.disableNpmInstall = false;
 }
 
 KitPlugin.prototype.init = function() {
 
-	try {
-		var localConfig = null;
+	var localConfig = null;
 
-		let argv = this.argv;
-		let kit = null,
-			kitPath = null,	  
-			folder = null;
+	let argv = this.argv;
+	let kit = null,
+		kitPath = null,	  
+		folder = null;
 
-		let isInstall = argv.install || argv.i || false,
-			isUpdate = argv.update || argv.u || false;
+	let isInstall = argv.install || argv.i || false,
+		isUpdate = argv.update || argv.u || false;
 
-		if (isInstall && isInstall !== true) {
-			isInstall = this.getKitName(isInstall);
-			kit = isInstall;  // kit name, for example, steamer-react
-			kitPath = path.join(utils.globalNodeModules, kit);  // steamer-react global module
-			folder = argv.path || argv.p || this.getFolderName(kit);	// target folder
+	if (isInstall && isInstall !== true) {
+		isInstall = this.getKitName(isInstall);
+		kit = isInstall;  // kit name, for example, steamer-react
+		kitPath = path.join(utils.globalNodeModules, kit);  // steamer-react global module
+		folder = argv.path || argv.p || this.getFolderName(kit);	// target folder
 
-			if (fs.existsSync(folder)) {
-				throw new Error(folder + " has existed.");  // avoid duplicate folder
-			}
-
-			this.getPkgJson(kitPath);
+		if (fs.existsSync(folder)) {
+			throw new Error(folder + " has existed.");  // avoid duplicate folder
 		}
-		else if (isUpdate) {
-			localConfig = this.readLocalConfig();
-			kit = localConfig.kit || null;
+
+		this.getPkgJson(kitPath);
+	}
+	else if (isUpdate) {
+		localConfig = this.readLocalConfig();
+		kit = localConfig.kit || null;
+		folder = path.resolve();
+
+		// 支持没有.steamer/steamer-plugin-kit.js配置的steamer脚手架升级
+		if (isUpdate && isUpdate !== true) {
+			localConfig = {};
+			localConfig.kit = this.getKitName(isUpdate);
+			kit = localConfig.kit;
+
 			kitPath = path.join(utils.globalNodeModules, kit);
-			folder = path.resolve();
-
 			this.getPkgJson(kitPath);
-
-			// 支持没有.steamer/steamer-plugin-kit.js配置的steamer脚手架升级
-			if (isUpdate && isUpdate !== true) {
-				localConfig = {};
-				localConfig.kit = this.getKitName(isUpdate);
-
-				this.createLocalConfig(localConfig.kit, path.resolve());
-
-			}
-
-			if (!localConfig || !localConfig.kit) {
-				throw new Error("The kit config is not found in .steamer folder");
-			}
-
+			
+			this.createLocalConfig(localConfig.kit, path.resolve());
+		}
+		else {
+			kitPath = path.join(utils.globalNodeModules, kit);
+			this.getPkgJson(kitPath);
 		}
 
-		let kitConfig = {};
-
-		try {
-			kitConfig = require(kit);
+		if (!localConfig || !localConfig.kit) {
+			throw new Error("The kit config is not found in .steamer folder");
 		}
-		catch(e) {
-			throw new Error("The kit " + kit + " is not installed");
-		}
-		
-		let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
 
-		let bkFiles = ["package.json", "tools", "README.md"]; //this.filterBkFiles(kitConfig.files); // backup files
+	}
 
-		/**
-		 * // .steamer/steamer.plugin-kit.js
-		   module.exports = {
-			    "plugin": "steamer-plugin-kit",
-			    "config": {
-			        "kit": "steamer-react"
-			    }
-			}
-		*/
+	let kitConfig = {};
 
-		let opts = {
-			kit,
-			kitPath,
-			folder,
-			localConfig,
-			kitConfig,
-			bkFiles,
-			cpyFiles
-		};
-
-		if (isUpdate) {
-			this.update(opts);
-		}
-		else if (isInstall) {
-			this.install(opts);
-		}
+	try {
+		kitConfig = require(kit);
 	}
 	catch(e) {
-		utils.error(e.stack);
+		throw new Error("The kit " + kit + " is not installed");
+	}
+	
+	let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
+
+	let bkFiles = ["package.json", "tools", "README.md"]; // backup files
+
+	/**
+	 * // .steamer/steamer.plugin-kit.js
+	   module.exports = {
+		    "plugin": "steamer-plugin-kit",
+		    "config": {
+		        "kit": "steamer-react"
+		    }
+		}
+	*/
+
+	let opts = {
+		kit,
+		kitPath,
+		folder,
+		localConfig,
+		kitConfig,
+		bkFiles,
+		cpyFiles
+	};
+
+	if (isUpdate) {
+		this.update(opts);
+	}
+	else if (isInstall) {
+		this.install(opts);
 	}
 };
 
@@ -185,7 +182,7 @@ KitPlugin.prototype.getPkgJson = function(kitPath) {
  * @param  {String} kitPath [starter kit global path]
  * @param  {String} folder [new package.json destination folder]
  */
-KitPlugin.prototype.copyPkgJson = function(kitPath, folder) {
+KitPlugin.prototype.copyPkgJson = function(folder) {
 	let pkgJson = {
 	  	"name": "",
 	  	"version": "",
@@ -211,7 +208,14 @@ KitPlugin.prototype.copyPkgJson = function(kitPath, folder) {
 	pkgJson.peerDependencies = pkgJsonSrc.peerDependencies || {};
 	pkgJson.engines = pkgJsonSrc.engines || {};
 
-	fs.writeFileSync(path.join(folder, "package.json"), JSON.stringify(pkgJson, null, 4));
+	let pkgJsonFile = path.join(folder, "package.json");
+
+	if (fs.existsSync(pkgJsonFile)) {
+		let pkgJsonContent = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8") || "{}");
+		pkgJson = _.merge({}, pkgJsonContent, pkgJson);
+	}
+
+	fs.writeFileSync(path.join(folder, "package.json"), JSON.stringify(pkgJson, null, 4), "utf-8");
 };
 
 KitPlugin.prototype.filterCopyFiles = function(files) {
@@ -227,24 +231,6 @@ KitPlugin.prototype.filterCopyFiles = function(files) {
 	return f;
 };
 
-/**
- * [filter backup files/folders]
- * @param  {Array} files [files in package.json]
- * @return {Array}       [backup files/folderes]
- */
-KitPlugin.prototype.filterBkFiles = function(files) {
-	var f = [];
-
-	f = f.concat(files);
-
-	f = f.filter((item) => {
-		return item !== "src";
-	});
-
-	f.push("package.json");
-
-	return f;
-};
 
 /**
  * [backup files while updating]
@@ -287,10 +273,10 @@ KitPlugin.prototype.createLocalConfig = function(kit, folder) {
 		version: this.pkgJson.version
 	};
 
-	let isJs = true,
-		isForce = true;
-
-	utils.createConfig(folder, config, isJs, isForce);
+	utils.createConfig(config, {
+		folder: folder,
+		overwrite: true,
+	});
 };
 
 /**
@@ -344,7 +330,7 @@ KitPlugin.prototype.install = function(opts) {
 		// copy template files
 		this.copyFiles(kitPath, cpyFiles, folder, config);
 
-		this.copyPkgJson(kitPath, folder);
+		this.copyPkgJson(folder);
 
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
 		this.createLocalConfig(kit, folder);
@@ -362,10 +348,6 @@ KitPlugin.prototype.install = function(opts) {
  * @param  {String} folder [destination folder]
  */
 KitPlugin.prototype.installPkg = function(folder, npmCmd = "npm") {
-
-	if (this.disableNpmInstall) {
-		return folder + '-' + npmCmd;
-	}
 
 	utils.info("we run " + npmCmd + " install for you");
 	
@@ -393,7 +375,7 @@ KitPlugin.prototype.update = function(opts) {
 	// copy files excluding src
 	this.copyFilterFiles(kitPath, folder, bkFiles);
 
-	this.copyPkgJson(kitPath, folder);
+	this.copyPkgJson(folder);
 
 	utils.info(kit + " update success");
 };

@@ -2,6 +2,11 @@
 
 starter kit 管理命令
 
+[![NPM Version](https://img.shields.io/npm/v/steamer-plugin-kit.svg?style=flat)](https://www.npmjs.com/package/steamer-plugin-kit)
+[![Travis](https://img.shields.io/travis/SteamerTeam/steamer-plugin-kit.svg)](https://travis-ci.org/SteamerTeam/steamer-plugin-kit)
+[![Deps](https://david-dm.org/SteamerTeam/steamer-plugin-kit.svg)](https://david-dm.org/SteamerTeam/steamer-plugin-kit)
+[![Coverage](https://img.shields.io/coveralls/SteamerTeam/steamer-plugin-kit.svg)](https://coveralls.io/github/SteamerTeam/steamer-plugin-kit)
+
 ### 安装
 ```javascript
 npm i -g steamerjs
