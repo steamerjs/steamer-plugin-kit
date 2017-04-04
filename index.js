@@ -169,7 +169,8 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
  * @param  {String} kitPath [starter kit global path]
  */
 KitPlugin.prototype.getPkgJson = function(kitPath) {
-
+	console.log(kitPath);
+	
 	let pkgJsonFile = path.resolve(kitPath, "package.json");
 	
 	this.pkgJson = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8"));
