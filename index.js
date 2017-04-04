@@ -26,6 +26,9 @@ KitPlugin.prototype.init = function() {
 	let isInstall = argv.install || argv.i || false,
 		isUpdate = argv.update || argv.u || false;
 
+	console.log("global node_modules===========");
+	console.log(utils.globalNodeModules);
+	
 	if (isInstall && isInstall !== true) {
 		isInstall = this.getKitName(isInstall);
 		kit = isInstall;  // kit name, for example, steamer-react
@@ -170,7 +173,7 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
  */
 KitPlugin.prototype.getPkgJson = function(kitPath) {
 	console.log(kitPath);
-	
+
 	let pkgJsonFile = path.resolve(kitPath, "package.json");
 	
 	this.pkgJson = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8"));
