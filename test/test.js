@@ -98,7 +98,7 @@ describe("install", function() {
 		var kit = new plugin({
 			install: 'example1',
 		});
-		let ps = kit.init();
+		kit.init();
 
 		userInput("data", "//localhost:9001/\n", 1);
 		userInput("data", "//localhost:8001/\n", 2);
@@ -133,8 +133,6 @@ describe("install", function() {
 			done();
 		}, 7);
 
-		
-
 	});
 
 	it("starter kit install same normal kit", function() {
@@ -158,7 +156,7 @@ describe("install", function() {
 		var kit = new plugin({
 			install: '@tencent/example2',
 		});
-		let ps = kit.init();
+		kit.init();
 
 		userInput("data", "//localhost:9001/\n", 1);
 		userInput("data", "//localhost:8001/\n", 2);
@@ -197,6 +195,54 @@ describe("install", function() {
 
 	});
 
+	it("starter kit install not available kit", function(done) {
+		this.timeout(600000);
+
+		var kit = new plugin({
+			install: 'example',
+		});
+		kit.init();
+
+		userInput("data", "//localhost:9001/\n", 1);
+		userInput("data", "//localhost:8001/\n", 2);
+		userInput("data", "9001\n", 3);
+		userInput("data", "/home/\n", 4);
+		userInput("data", "npm\n", 5);
+		userInput("data", "\n", 6);
+
+		userInputEnd(function(){
+			let project = path.join(PROJECT, "steamer-example");
+
+			let folderInfo = fs.readdirSync(project);
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+				'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'config',
+			  	'node_modules',
+			  	'package.json',
+			  	'src',
+			  	'tools' ]
+			);
+
+			let steamerConfig = require(path.join(project, "config/steamer.config"));
+			expect(steamerConfig).to.eql({
+				"webserver": "//localhost:9001/",
+			    "cdn": "//localhost:8001/",
+			    "port": "9001",
+			    "route": "/home/"
+			});
+			done();
+		}, 7);
+
+
+	});
+
+	after(function() {
+		spawnSync("npm", ["uninstall", "-g", "steamer-example"], { stdio: 'inherit' });
+	});
+
 
 });
 
@@ -226,7 +272,7 @@ describe("update", function() {
 		var kit = new plugin({
 			update: "example1",
 		});
-		let ps = kit.init();
+		kit.init();
 
 		let folderInfo = fs.readdirSync(project),
 			bkInfo = fs.readdirSync(bk),
@@ -245,7 +291,14 @@ describe("update", function() {
 		  	'tools' 
 		]);
 		
-		expect(bkFolderInfo).to.eql([ 'README.md', 'package.json', 'tools' ]);
+		expect(bkFolderInfo).to.eql([ 
+			'.eslintrc.js',
+  			'.stylelintrc.js',
+  			'README.md',
+  			'config',
+  			'package.json',
+  			'tools' 
+  		]);
 
 		let config = JSON.parse(fs.readFileSync(path.join(project, "package.json"), "utf-8"));
 
@@ -263,7 +316,7 @@ describe("update", function() {
 		var kit = new plugin({
 			update: true,
 		});
-		let ps = kit.init();
+		kit.init();
 
 		let folderInfo = fs.readdirSync(project),
 			bkInfo = fs.readdirSync(bk),
@@ -282,7 +335,14 @@ describe("update", function() {
 		  	'tools' 
 		]);
 		
-		expect(bkFolderInfo).to.eql([ 'README.md', 'package.json', 'tools' ]);
+		expect(bkFolderInfo).to.eql([ 
+			'.eslintrc.js',
+  			'.stylelintrc.js',
+  			'README.md',
+  			'config',
+  			'package.json',
+  			'tools' 
+  		]);
 
 		let config = JSON.parse(fs.readFileSync(path.join(project, "package.json"), "utf-8"));
 
@@ -299,7 +359,7 @@ describe("update", function() {
 		var kit = new plugin({
 			update: true,
 		});
-		let ps = kit.init();
+		kit.init();
 
 		let folderInfo = fs.readdirSync(project),
 			bkInfo = fs.readdirSync(bk),
@@ -317,7 +377,15 @@ describe("update", function() {
 		  	'src',
 		  	'tools' 
 		]);
-		expect(bkFolderInfo).to.eql([ 'README.md', 'package.json', 'tools' ]);
+		
+		expect(bkFolderInfo).to.eql([ 
+			'.eslintrc.js',
+  			'.stylelintrc.js',
+  			'README.md',
+  			'config',
+  			'package.json',
+  			'tools' 
+  		]);
 
 		let config = JSON.parse(fs.readFileSync(path.join(project, "package.json"), "utf-8"));
 

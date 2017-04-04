@@ -7,6 +7,7 @@ const path = require('path'),
 	  pluginUtils = require('steamer-pluginutils'),
 	  spawnSync = require('child_process').spawnSync;
 
+
 function KitPlugin(argv) {
 	this.argv = argv;
 	this.utils = new pluginUtils("steamer-plugin-kit");
@@ -20,6 +21,7 @@ KitPlugin.prototype.init = function() {
 	let argv = this.argv;
 	let kit = null,
 		kitPath = null,	  
+		kitConfig = {},
 		folder = null,
 		globalNodeModules = this.utils.globalNodeModules || "";
 
@@ -36,6 +38,8 @@ KitPlugin.prototype.init = function() {
 			throw new Error(folder + " has existed.");  // avoid duplicate folder
 		}
 
+		kitConfig = this.getKitConfig(kit);
+
 		this.getPkgJson(kitPath);
 	}
 	else if (isUpdate) {
@@ -49,12 +53,17 @@ KitPlugin.prototype.init = function() {
 			localConfig.kit = this.getKitName(isUpdate);
 			kit = localConfig.kit;
 
+			kitConfig = this.getKitConfig(kit);
+
 			kitPath = path.join(globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 			
 			this.createLocalConfig(localConfig.kit, path.resolve());
 		}
 		else {
+
+			kitConfig = this.getKitConfig(kit);
+
 			kitPath = path.join(globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 		}
@@ -64,19 +73,10 @@ KitPlugin.prototype.init = function() {
 		}
 
 	}
-
-	let kitConfig = {};
-
-	try {
-		kitConfig = require(kit);
-	}
-	catch(e) {
-		throw new Error("The kit " + kit + " is not installed");
-	}
 	
 	let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
 
-	let bkFiles = ["package.json", "tools", "README.md"]; // backup files
+	let bkFiles = _.merge([], kitConfig.files, ["package.json"]); // backup files
 
 	/**
 	 * // .steamer/steamer.plugin-kit.js
@@ -105,6 +105,22 @@ KitPlugin.prototype.init = function() {
 		this.install(opts);
 	}
 };
+
+KitPlugin.prototype.getKitConfig = function(kit) {
+	let kitConfig = {};
+
+	try {
+		kitConfig = require(kit);
+	}
+	catch(e) {
+		// throw new Error("The kit " + kit + " is not installed");
+		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit' });
+		kitConfig = require(kit);
+	}
+
+	return kitConfig;
+};
+
 
 /**
  * [get kit name]
@@ -239,8 +255,12 @@ KitPlugin.prototype.filterCopyFiles = function(files) {
 KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
 	let destFolder = "backup/" + Date.now();
 	bkFiles.forEach((item) => {
-		fs.copySync(path.join(folder, item), path.join(folder, destFolder, item));
-		fs.removeSync(path.join(folder, item));
+		let file = path.join(folder, item);
+
+		if (fs.existsSync(file)) {
+			fs.copySync(file, path.join(folder, destFolder, item));
+			fs.removeSync(file);
+		}
 	});
 };
 
@@ -254,7 +274,11 @@ KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
 KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, bkFiles) {
 	
 	bkFiles.forEach((item) => {
-		fs.copySync(path.join(kitPath, item), path.join(folder, item));
+		let file = path.join(kitPath, item);
+
+		if (fs.existsSync(file)) {
+			fs.copySync(file, path.join(folder, item));
+		}
 	});
 
 };

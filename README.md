@@ -18,6 +18,8 @@ npm i -g steamer-plugin-kit
 
 * 全局安装你想用的脚手架
 
+`v1.2.0` 之后，这步可省略，如果你的脚手架没有全局安装，插件会自动帮你用 `npm` 命令进行全局安装。
+
 ```javascript
 
 npm i -g steamer-react
