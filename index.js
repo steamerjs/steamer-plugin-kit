@@ -44,7 +44,7 @@ KitPlugin.prototype.init = function() {
 		kit = localConfig.kit || null;
 		folder = path.resolve();
 
-		// 支持没有.steamer/steamer-plugin-kit.js配置的steamer脚手架升级
+		// suuport update for starter kit without .steamer/steamer-plugin-kit.js
 		if (isUpdate && isUpdate !== true) {
 			localConfig = {};
 			localConfig.kit = this.getKitName(isUpdate);
@@ -379,6 +379,5 @@ KitPlugin.prototype.update = function(opts) {
 
 	utils.info(kit + " update success");
 };
-
 
 module.exports = KitPlugin;
