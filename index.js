@@ -20,18 +20,16 @@ KitPlugin.prototype.init = function() {
 	let argv = this.argv;
 	let kit = null,
 		kitPath = null,	  
-		folder = null;
+		folder = null,
+		globalNodeModules = this.utils.globalNodeModules || (path.join(process.env.npm_config_prefix || "", "lib/node_modules"));
 
 	let isInstall = argv.install || argv.i || false,
 		isUpdate = argv.update || argv.u || false;
 
-	console.log("global node_modules===========");
-	console.log(this.utils.globalNodeModules);
-
 	if (isInstall && isInstall !== true) {
 		isInstall = this.getKitName(isInstall);
 		kit = isInstall;  // kit name, for example, steamer-react
-		kitPath = path.join(this.utils.globalNodeModules, kit);  // steamer-react global module
+		kitPath = path.join(globalNodeModules, kit);  // steamer-react global module
 		folder = argv.path || argv.p || this.getFolderName(kit);	// target folder
 
 		if (fs.existsSync(folder)) {
@@ -51,13 +49,13 @@ KitPlugin.prototype.init = function() {
 			localConfig.kit = this.getKitName(isUpdate);
 			kit = localConfig.kit;
 
-			kitPath = path.join(this.utils.globalNodeModules, kit);
+			kitPath = path.join(globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 			
 			this.createLocalConfig(localConfig.kit, path.resolve());
 		}
 		else {
-			kitPath = path.join(this.utils.globalNodeModules, kit);
+			kitPath = path.join(globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 		}
 

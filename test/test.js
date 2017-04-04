@@ -9,8 +9,6 @@ const path = require('path'),
 	  spawnSync = require('child_process').spawnSync,
 	  plugin = require('../index');
 
-console.log(process);
-
 const TEST = "test",
 	  PROJECT = path.join(process.cwd(), TEST, "project"),
 	  KIT = path.join(process.cwd(), TEST, "kit");
