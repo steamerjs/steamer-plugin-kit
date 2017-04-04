@@ -7,7 +7,7 @@ const path = require('path'),
 	  expect = require('expect.js'),
 	  sinon = require('sinon'),
 	  spawnSync = require('child_process').spawnSync,
-	  plugin = require('../index.js');
+	  plugin = require('../index');
 
 const TEST = "test",
 	  PROJECT = path.join(process.cwd(), TEST, "project"),
