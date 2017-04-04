@@ -21,10 +21,7 @@ KitPlugin.prototype.init = function() {
 	let kit = null,
 		kitPath = null,	  
 		folder = null,
-		globalNodeModules = this.utils.globalNodeModules || (path.join(process.env.npm_config_prefix || "", "lib/node_modules"));
-
-	this.utils.addRequirePath(globalNodeModules);
-	console.log(require.main.paths);
+		globalNodeModules = this.utils.globalNodeModules || "";
 
 	let isInstall = argv.install || argv.i || false,
 		isUpdate = argv.update || argv.u || false;
@@ -71,8 +68,6 @@ KitPlugin.prototype.init = function() {
 	let kitConfig = {};
 
 	try {
-		console.log("kit==========");
-		console.log(kit);
 		kitConfig = require(kit);
 	}
 	catch(e) {
@@ -174,7 +169,6 @@ KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
  * @param  {String} kitPath [starter kit global path]
  */
 KitPlugin.prototype.getPkgJson = function(kitPath) {
-	console.log(kitPath);
 
 	let pkgJsonFile = path.resolve(kitPath, "package.json");
 	

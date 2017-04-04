@@ -5,6 +5,8 @@ node_js:
   - 7
   - 6
   - 5
+env
+  - NODE_PATH=$(npm root -g)
 script: npm run travis
 
 after_success:
