@@ -6,8 +6,8 @@
   "bin": "index.js",
   "scripts": {
     "lint": "eslint index.js",
-    "test": "npm run lint && mocha ./test/test*",
-    "cover": "istanbul cover _mocha ./test/test*",
+    "test": "npm run lint && mocha ./test/test.js",
+    "cover": "istanbul cover _mocha ./test/test.js",
     "travis": "npm run cover -- --report lcovonly"
   },
   "repository": {

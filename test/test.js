@@ -1,6 +1,5 @@
 "use strict";
 
-console.log(require('../index.js'));
 const path = require('path'),
 	  os = require('os'),
 	  fs = require('fs-extra'),
