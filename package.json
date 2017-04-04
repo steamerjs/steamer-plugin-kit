@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint index.js",
     "test": "npm run lint && mocha ./test/test.js",
-    "cover": "istanbul cover node_modules/mocha/bin/_mocha ./test/test.js",
+    "cover": "istanbul cover --hook-run-in-context _mocha ./test/test.js",
     "travis": "npm run cover -- --report lcovonly"
   },
   "repository": {
