@@ -24,6 +24,7 @@ KitPlugin.prototype.init = function() {
 		globalNodeModules = this.utils.globalNodeModules || (path.join(process.env.npm_config_prefix || "", "lib/node_modules"));
 
 	this.utils.addRequirePath(globalNodeModules);
+	console.log(require.main.paths);
 
 	let isInstall = argv.install || argv.i || false,
 		isUpdate = argv.update || argv.u || false;
