@@ -346,7 +346,8 @@ KitPlugin.prototype.install = function(opts) {
  * @param  {String} folder [destination folder]
  * @param  {String} folder [destination folder]
  */
-KitPlugin.prototype.installPkg = function(folder, npmCmd = "npm") {
+KitPlugin.prototype.installPkg = function(folder, npmCmd) {
+	var npmCmd = npmCmd || "npm";
 
 	this.utils.info("we run " + npmCmd + " install for you");
 	
