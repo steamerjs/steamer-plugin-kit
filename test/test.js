@@ -9,8 +9,6 @@ const path = require('path'),
 	  spawnSync = require('child_process').spawnSync,
 	  plugin = require('../index');
 
-console.log(process.env);
-
 const TEST = "test",
 	  PROJECT = path.join(process.cwd(), TEST, "project"),
 	  KIT = path.join(process.cwd(), TEST, "kit");
@@ -22,13 +20,13 @@ function linkKit(kitName, cmd) {
 }
 
 function userInput(key, val, order) {
-	setTimeout(() => {
+	setTimeout(function () {
 		process.stdin.emit(key, val);
 	}, order * 200);
 }
 
 function userInputEnd(cb, order) {
-	setTimeout(() => {
+	setTimeout(function () {
 		cb();
 	}, order * 200);
 }
@@ -327,7 +325,7 @@ describe("update", function() {
 
 	});
 
-	after(() => {
+	after(function() {
 
 		linkKit("steamer-example3", "unlink");
 		linkKit("steamer-example4", "unlink");
