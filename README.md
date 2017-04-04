@@ -126,3 +126,4 @@ npm test
 * v1.1.1 支持npm安装scope package，如@tencent/xxx
 * v1.1.2 支持安装脚手架成功后，运行npm install
 * v1.1.3 支持询问使用哪种方式安装依赖(npm, cnpm, yarn, tnpm)
+* v1.2.0 优化测式用例，支持自动安装没在全局安装的脚手架
