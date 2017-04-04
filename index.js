@@ -8,7 +8,6 @@ const path = require('path'),
 	  spawnSync = require('child_process').spawnSync;
 
 var utils = new pluginUtils("steamer-plugin-kit");
-
 const prefix = "steamer-";
 
 function KitPlugin(argv) {
