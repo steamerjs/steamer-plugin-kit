@@ -23,6 +23,8 @@ KitPlugin.prototype.init = function() {
 		folder = null,
 		globalNodeModules = this.utils.globalNodeModules || (path.join(process.env.npm_config_prefix || "", "lib/node_modules"));
 
+	this.utils.addRequirePath(globalNodeModules);
+
 	let isInstall = argv.install || argv.i || false,
 		isUpdate = argv.update || argv.u || false;
 
@@ -68,6 +70,8 @@ KitPlugin.prototype.init = function() {
 	let kitConfig = {};
 
 	try {
+		console.log("kit==========");
+		console.log(kit);
 		kitConfig = require(kit);
 	}
 	catch(e) {
