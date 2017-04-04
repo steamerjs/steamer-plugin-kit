@@ -114,7 +114,7 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 	}
 	catch(e) {
 		// throw new Error("The kit " + kit + " is not installed");
-		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit' });
+		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit', shell: true });
 		kitConfig = require(kit);
 	}
 
@@ -377,7 +377,7 @@ KitPlugin.prototype.installPkg = function(folder, npmCmd) {
 	
 	process.chdir(path.resolve(folder));
 
-	let result = spawnSync(npmCmd, ['install'], { stdio: 'inherit' });
+	let result = spawnSync(npmCmd, ['install'], { stdio: 'inherit', shell: true });
 
 	if (result.error) {
 		this.utils.error('command ' + npmCmd + ' is not found or other error has occurred');

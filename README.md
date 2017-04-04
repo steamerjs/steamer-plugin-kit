@@ -116,15 +116,3 @@ npm test
 * react starter kit: [steamer-react](https://github.com/SteamerTeam/steamer-react/)
 * vue starter kit: [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
 * 无框架 starter kit: [steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
-
-### Changelog
-* v1.0.1 安装及更新 starter kit
-* v1.0.3 添加报错提示
-* v1.0.5 升级 `fs-extra`
-* v1.0.6 优化package.json的复制
-* v1.1.0 支持从github clone下来的steamer脚手架升级
-* v1.1.1 支持npm安装scope package，如@tencent/xxx
-* v1.1.2 支持安装脚手架成功后，运行npm install
-* v1.1.3 支持询问使用哪种方式安装依赖(npm, cnpm, yarn, tnpm)
-* v1.2.0 优化测式用例，支持自动安装没在全局安装的脚手架
-* v1.2.2 更新依赖
