@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint index.js",
     "test": "npm run lint && mocha ./test/test.js",
-    "cover": "istanbul cover --hook-run-in-context _mocha ./test/test.js",
+    "cover": "istanbul cover --hook-run-in-context _mocha --compilers js:babel-core/register ./test/test.js",
     "travis": "npm run cover -- --report lcovonly"
   },
   "repository": {
@@ -33,6 +33,7 @@
     "steamer-pluginutils": "^1.2.1"
   },
   "devDependencies": {
+    "babel-core": "^6.24.0",
     "bluebird": "^3.4.7",
     "codecov.io": "^0.1.6",
     "coveralls": "^2.12.0",
