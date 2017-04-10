@@ -513,4 +513,30 @@ KitPlugin.prototype.update = function(opts) {
 	this.utils.info(kit + " update success");
 };
 
+/**
+ * [help]
+ */
+KitPlugin.prototype.help = function() {
+	this.utils.printUsage('steamer kit manager', 'kit');
+	this.utils.printOption([
+		{
+			option: "list",
+			alias: "l",
+			description: "list all available starter kits"
+		},
+		{
+			option: "install",
+			alias: "i",
+			value: "<starter kit> [--path|-p] <project path>",
+			description: "install starter kit"
+		},
+		{
+			option: "update",
+			alias: "u",
+			value: "[<starter kit>]",
+			description: "update starter kit for project"
+		}
+	]);
+};
+
 module.exports = KitPlugin;

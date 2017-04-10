@@ -26,9 +26,22 @@ npm i -g steamer-react
 
 ```
 
+* 罗列脚手架
+
+```javascript
+steamer kit --list
+// 或
+steamer kit -l
+```
+
 * 部署脚手架
 
-通过 `steamer` 命令，将 `starter kit` 拷贝到指定目录，并初始化
+此命令会罗列所有 符合 [steamer 脚手架规范](https://github.com/SteamerTeam/steamer-example/#如何开发一个-steamer-规范的-starterkit) 的脚手架，你可以选择并进行安装：
+```javascript
+steamer kit
+```
+
+或者，你可以通过 `steamer` 命令，指定 `starter kit`， 并拷贝到指定目录和初始化脚手架：
 
 ```javascript
 steamer kit --install react --path project
@@ -116,3 +129,4 @@ npm test
 * react starter kit: [steamer-react](https://github.com/SteamerTeam/steamer-react/)
 * vue starter kit: [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
 * 无框架 starter kit: [steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
+* react 组件开发 starter kit: [steamer-react-component](https://github.com/SteamerTeam/steamer-react-component/)

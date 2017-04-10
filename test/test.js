@@ -95,12 +95,6 @@ describe("install", function() {
 
 			done();
 		}, 3);
-		// userInput("data", "//localhost:9001/\n", 1);
-		// userInput("data", "//localhost:8001/\n", 2);
-		// userInput("data", "9001\n", 3);
-		// userInput("data", "/home/\n", 4);
-		// userInput("data", "npm\n", 5);
-		
 
 	});
 
@@ -454,6 +448,16 @@ describe("update", function() {
 
 		linkKit("steamer-example3", "unlink");
 		linkKit("steamer-example4", "unlink");
+	});
+
+});
+
+describe("help", function() {
+	
+	it("help", function() {
+		var kit = new plugin({});
+
+		kit.help();
 	});
 
 });
