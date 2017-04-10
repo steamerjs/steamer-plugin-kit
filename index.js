@@ -14,11 +14,11 @@ function KitPlugin(argv) {
 	this.prefix = "steamer-";
 }
 
-KitPlugin.prototype.init = function() {
+KitPlugin.prototype.init = function(argv) {
 
 	var localConfig = null;
 
-	let argv = this.argv;
+	var argv = argv || this.argv;
 	let kit = null,
 		kitPath = null,	  
 		kitConfig = {},
@@ -26,7 +26,8 @@ KitPlugin.prototype.init = function() {
 		globalNodeModules = this.utils.globalNodeModules || "";
 
 	let isInstall = argv.install || argv.i || false,
-		isUpdate = argv.update || argv.u || false;
+		isUpdate = argv.update || argv.u || false,
+		isList = argv.list || argv.l || false;
 
 	if (isInstall && isInstall !== true) {
 		isInstall = this.getKitName(isInstall);
@@ -95,7 +96,8 @@ KitPlugin.prototype.init = function() {
 		localConfig,
 		kitConfig,
 		bkFiles,
-		cpyFiles
+		cpyFiles,
+		globalNodeModules,
 	};
 
 	if (isUpdate) {
@@ -104,6 +106,112 @@ KitPlugin.prototype.init = function() {
 	else if (isInstall) {
 		this.install(opts);
 	}
+	else if (isList) {
+		this.list(opts);
+	}
+	else {
+		this.auto(opts);
+	}
+};
+
+/**
+ * auto install
+ */
+KitPlugin.prototype.auto = function(opts) {
+	let kits = this.listKit(opts);
+
+	inquirer.prompt([{
+		type: 'list',
+		name: 'kit',
+		message: 'which starterkit do you like: ',
+		choices: kits,
+	},{
+		type: 'input',
+		name: 'path',
+		message: 'type in your project name: ',
+	}]).then((answers) => {
+		let kit = answers.kit,
+			projectPath = answers.path;
+
+		if (kit) {
+			this.init({
+				install: kit,
+				path: projectPath,
+			});
+		}
+
+	});
+};
+
+/**
+ * list avaialbe starter kits
+ * @param  {Object} opts [options]
+ */
+KitPlugin.prototype.list = function(opts) {
+	let kits = this.listKit(opts);
+
+	this.utils.warn("steamer starterkit:");
+	kits.map((kit) => {
+		this.utils.info(kit);
+	});
+};
+
+/**
+ * [search available starter kits]
+ * @param  {Object} opts [options]
+ * @return {Array}       [starter kits]
+ */
+KitPlugin.prototype.listKit = function(opts) {
+	let globalNodeModules = opts.globalNodeModules || "";
+	let pkgs = fs.readdirSync(globalNodeModules),
+		kits = [];
+
+	pkgs = pkgs.filter((item) => {
+		return (!!~item.indexOf("steamer-") && !~item.indexOf("steamer-plugin")) || item.indexOf("@") === 0;
+	});
+
+	let scopes = [];
+
+	pkgs.forEach((item, key) => {
+		if (item.indexOf("@") === 0) {
+			scopes.push(item);
+			pkgs.slice(key, 1);
+		}
+		else {
+			let pkgJson = require(path.join(globalNodeModules, item, "package.json")),
+				keywords = pkgJson.keywords || [];
+
+			// console.log(item, keywords);
+			if (!!~keywords.indexOf("steamer starterkit")) {
+				kits.push(item);
+			}
+		}
+	});
+
+	
+	scopes.forEach((item1) => {
+		let pkgs = fs.readdirSync(path.join(globalNodeModules, item1));
+
+		pkgs.filter((item2) => {
+			return !!~item2.indexOf("steamer-") && !~item2.indexOf("steamer-plugin");
+		});
+
+		pkgs.forEach((item2) => {
+			let pkgJson = require(path.join(globalNodeModules, item1, item2, "package.json")),
+				keywords = pkgJson.keywords || [];
+
+			if (!!~keywords.indexOf("steamer starterkit")) {
+				kits.push(item1 + "/" + item2);
+			}
+		});
+
+	});
+
+	kits = kits.map((item) => {
+		return item.replace("steamer-", "");
+	});
+
+	return kits;
 };
 
 KitPlugin.prototype.getKitConfig = function(kit) {
@@ -113,7 +221,6 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 		kitConfig = require(kit);
 	}
 	catch(e) {
-		// throw new Error("The kit " + kit + " is not installed");
 		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit', shell: true });
 		kitConfig = require(kit);
 	}
@@ -342,6 +449,8 @@ KitPlugin.prototype.install = function(opts) {
 		var npm = answers.npm;
 		delete answers['npm'];
 
+		console.log(answers);
+		
 		// init config
 		answers.webserver = answers.webserver || "//localhost:9000/";
 		answers.cdn = answers.cdn || "//localhost:8000/";

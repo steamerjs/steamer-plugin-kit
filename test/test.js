@@ -47,6 +47,63 @@ describe("install", function() {
 		linkKit("steamer-example2", "link");
 	});
 
+	it("list available starter kits", function() {
+		this.timeout(2400);
+
+		var kit = new plugin({
+			list: true,
+		});
+
+		var infoStub = sinon.stub(kit.utils, "info");
+
+		kit.init();
+
+		expect(infoStub.calledWith("example1")).to.be(true);
+		expect(infoStub.calledWith("@tencent/example2")).to.be(true);
+
+		infoStub.restore();
+	});
+
+	it("auto install", function(done) {
+		this.timeout(10000);
+
+		var kit = new plugin({});
+
+		var listStub = sinon.stub(kit, "listKit").callsFake(function() {
+			return [
+				"example1",
+				"@tencent/example2",
+			];
+		});
+
+		kit.init();
+
+		var initStub = sinon.stub(kit, "init");
+
+		userInput("data", "\n", 1);
+		userInput("data", "auto\n", 2);
+
+		userInputEnd(function() {
+
+			expect(initStub.calledWith({
+				install: "example1",
+				path: "auto",
+			})).to.be(true);
+
+			initStub.restore();
+			listStub.restore();
+
+			done();
+		}, 3);
+		// userInput("data", "//localhost:9001/\n", 1);
+		// userInput("data", "//localhost:8001/\n", 2);
+		// userInput("data", "9001\n", 3);
+		// userInput("data", "/home/\n", 4);
+		// userInput("data", "npm\n", 5);
+		
+
+	});
+
 	it("starter kit install normal kit", function(done) {
 		this.timeout(10000);
 

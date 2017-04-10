@@ -1,3 +1,6 @@
+## 1.2.5
+	- steamer kit 命令允许选择脚手架安装
+
 
 ## 1.2.4
 	- 兼容 window shell
