@@ -1,3 +1,6 @@
+## 1.2.8
+	- 更新 steamer-pluginutils
+
 
 ## 1.2.7 
 	- 更新 inquirer 版本

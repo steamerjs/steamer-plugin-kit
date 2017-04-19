@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
@@ -30,7 +30,7 @@
     "inquirer": "^3.0.6",
     "klaw-sync": "^1.1.2",
     "lodash": "^4.17.2",
-    "steamer-pluginutils": "^1.2.4"
+    "steamer-pluginutils": "^1.2.6"
   },
   "devDependencies": {
     "babel-core": "^6.24.0",
