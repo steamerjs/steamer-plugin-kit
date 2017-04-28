@@ -3,9 +3,9 @@
 starter kit 管理命令
 
 [![NPM Version](https://img.shields.io/npm/v/steamer-plugin-kit.svg?style=flat)](https://www.npmjs.com/package/steamer-plugin-kit)
-[![Travis](https://img.shields.io/travis/SteamerTeam/steamer-plugin-kit.svg)](https://travis-ci.org/SteamerTeam/steamer-plugin-kit)
-[![Deps](https://david-dm.org/SteamerTeam/steamer-plugin-kit.svg)](https://david-dm.org/SteamerTeam/steamer-plugin-kit)
-[![Coverage](https://img.shields.io/coveralls/SteamerTeam/steamer-plugin-kit.svg)](https://coveralls.io/github/SteamerTeam/steamer-plugin-kit)
+[![Travis](https://img.shields.io/travis/steamerjs/steamer-plugin-kit.svg)](https://travis-ci.org/steamerjs/steamer-plugin-kit)
+[![Deps](https://david-dm.org/steamerjs/steamer-plugin-kit.svg)](https://david-dm.org/steamerjs/steamer-plugin-kit)
+[![Coverage](https://img.shields.io/coveralls/steamerjs/steamer-plugin-kit.svg)](https://coveralls.io/github/steamerjs/steamer-plugin-kit)
 
 ### 安装
 ```javascript
@@ -36,7 +36,7 @@ steamer kit -l
 
 * 部署脚手架
 
-此命令会罗列所有 符合 [steamer 脚手架规范](https://github.com/SteamerTeam/steamer-example/#如何开发一个-steamer-规范的-starterkit) 的脚手架，你可以选择并进行安装：
+此命令会罗列所有 符合 [steamer 脚手架规范](https://github.com/steamerjs/steamer-example/#如何开发一个-steamer-规范的-starterkit) 的脚手架，你可以选择并进行安装：
 ```javascript
 steamer kit
 ```
@@ -123,10 +123,10 @@ npm test
 ```
 
 ### Starter Kit 的例子
-符合 `steamer` 规范的 `Starter Kit`，可以参考 [steamer-example](https://github.com/SteamerTeam/steamer-example/)，并仿照规范，进行接入。
+符合 `steamer` 规范的 `Starter Kit`，可以参考 [steamer-example](https://github.com/steamerjs/steamer-example/)，并仿照规范，进行接入。
 
 官方 Starter Kit:
-* react starter kit: [steamer-react](https://github.com/SteamerTeam/steamer-react/)
-* vue starter kit: [steamer-vue](https://github.com/SteamerTeam/steamer-vue/)
-* 无框架 starter kit: [steamer-simple](https://github.com/SteamerTeam/steamer-simple/)
-* react 组件开发 starter kit: [steamer-react-component](https://github.com/SteamerTeam/steamer-react-component/)
+* react starter kit: [steamer-react](https://github.com/steamerjs/steamer-react/)
+* vue starter kit: [steamer-vue](https://github.com/steamerjs/steamer-vue/)
+* 无框架 starter kit: [steamer-simple](https://github.com/steamerjs/steamer-simple/)
+* react 组件开发 starter kit: [steamer-react-component](https://github.com/steamerjs/steamer-react-component/)

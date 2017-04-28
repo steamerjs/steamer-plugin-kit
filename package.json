@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
@@ -12,18 +12,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SteamerTeam/steamer-plugin-kit.git"
+    "url": "git+https://github.com/steamerjs/steamer-plugin-kit.git"
   },
   "keywords": [
     "steamer",
     "kit"
   ],
-  "author": "SteamerTeam",
+  "author": "steamerjs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/SteamerTeam/steamer-plugin-kit/issues"
+    "url": "https://github.com/steamerjs/steamer-plugin-kit/issues"
   },
-  "homepage": "https://github.com/SteamerTeam/steamer-plugin-kit#readme",
+  "homepage": "https://github.com/steamerjs/steamer-plugin-kit#readme",
   "dependencies": {
     "chalk": "^1.1.3",
     "fs-extra": "^2.1.2",
