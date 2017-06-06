@@ -343,6 +343,7 @@ describe("update", function() {
 			bkFolderInfo = fs.readdirSync(path.join(bk, bkInfo[0]));
 
 		if (isNode8) {
+			fs.ensureDir(path.join(project, 'node_modules'));
 			expect(folderInfo).to.eql([ 
 				'.eslintrc.js',
 			  	'.steamer',
