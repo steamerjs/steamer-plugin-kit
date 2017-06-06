@@ -338,13 +338,11 @@ describe("update", function() {
 		});
 		kit.init();
 
-		fs.ensureDir(path.join(project, 'node_modules'));
+		fs.ensureDirSync(path.join(project, 'node_modules'));
 
 		let folderInfo = fs.readdirSync(project),
 			bkInfo = fs.readdirSync(bk),
 			bkFolderInfo = fs.readdirSync(path.join(bk, bkInfo[0]));
-
-		// console.dir(folderInfo);
 
 		if (isNode8) {
 			expect(folderInfo).to.eql([ 
