@@ -218,7 +218,6 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 	let kitConfig = {};
 
 	try {
-		this.utils.addRequirePath(this.utils.globalNodeModules);
 		kitConfig = require(kit);
 	}
 	catch(e) {
