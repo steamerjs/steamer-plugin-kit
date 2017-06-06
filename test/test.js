@@ -344,7 +344,7 @@ describe("update", function() {
 			bkInfo = fs.readdirSync(bk),
 			bkFolderInfo = fs.readdirSync(path.join(bk, bkInfo[0]));
 
-		console.dir(folderInfo);
+		// console.dir(folderInfo);
 
 		if (isNode8) {
 			expect(folderInfo).to.eql([ 
