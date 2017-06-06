@@ -218,9 +218,15 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 	let kitConfig = {};
 
 	try {
+		this.utils.addRequirePath(this.utils.globalNodeModules);
 		kitConfig = require(kit);
 	}
 	catch(e) {
+		
+		if (e.code === 'MODULE_NOT_FOUND') {
+			this.utils.info(kit + ' is not found. Start installing...');
+		}
+
 		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit', shell: true });
 		kitConfig = require(kit);
 	}

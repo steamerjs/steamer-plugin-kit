@@ -6,8 +6,12 @@ const path = require('path'),
 	  chalk = require('chalk'),
 	  expect = require('expect.js'),
 	  sinon = require('sinon'),
+	  compareVersions = require('compare-versions'),
 	  spawnSync = require('child_process').spawnSync,
 	  plugin = require('../index');
+
+var nodeVer = process.version.replace('V', '').replace('v', ''),
+	isNode8 = compareVersions(nodeVer, '8.0.0') > -1;
 
 const TEST = "test",
 	  PROJECT = path.join(process.cwd(), TEST, "project"),
@@ -34,6 +38,13 @@ function userInputEnd(cb, order) {
 
 beforeEach(function() {
 	process.chdir(PROJECT);
+});
+
+after(function() {
+	fs.removeSync(path.join(KIT, 'steamer-example1/package-lock.json'));
+	fs.removeSync(path.join(KIT, 'steamer-example2/package-lock.json'));
+	fs.removeSync(path.join(KIT, 'steamer-example3/package-lock.json'));
+	fs.removeSync(path.join(KIT, 'steamer-example4/package-lock.json'));
 });
 
 describe("install", function() {
@@ -101,51 +112,6 @@ describe("install", function() {
 	it("starter kit install normal kit", function(done) {
 		this.timeout(10000);
 
-		// let ps = spawn("steamer", ["kit", "--install", "example1"], {
-		// 	// stdio: 'inherit',
-		// 	cwd: PROJECT
-		// });
-
-		// ps.stdout.pipe(process.stdout);
-
-		// setTimeout(() => {
-		// 	ps.stdin.write("\n");
-		// }, 200);
-		
-		// setTimeout(() => {
-		// 	ps.stdin.write("\n");
-		// }, 400);
-
-		// setTimeout(() => {
-		// 	ps.stdin.write("\n");
-		// }, 600);
-
-		// setTimeout(() => {
-		// 	ps.stdin.write("\n");
-		// }, 800);
-
-		// setTimeout(() => {
-		// 	ps.stdin.write("\n");
-		// }, 1000);
-
-		// setTimeout(() => {
-		// 	ps.stdin.write("\n");
-		// }, 1200);
-
-		// setTimeout(() => {
-		// 	ps.stdin.end();
-		// }, 1400);
-
-		// ps.on('error', function(err) {
-		//     console.log(err);
-		//     done();
-		// });
-
-		// ps.on('exit', function (err) {
-		//     console.log('exit');
-		//     done();
-		// });
-
 		var kit = new plugin({
 			install: 'example1',
 		});
@@ -162,17 +128,33 @@ describe("install", function() {
 			let project = path.join(PROJECT, "steamer-example1");
 
 			let folderInfo = fs.readdirSync(project);
-			expect(folderInfo).to.eql([ 
-				'.eslintrc.js',
-				'.steamer',
-			  	'.stylelintrc.js',
-			  	'README.md',
-			  	'config',
-			  	'node_modules',
-			  	'package.json',
-			  	'src',
-			  	'tools' ]
-			);
+
+			if (isNode8) {
+				expect(folderInfo).to.eql([ 
+					'.eslintrc.js',
+					'.steamer',
+				  	'.stylelintrc.js',
+				  	'README.md',
+				  	'config',
+				  	'package-lock.json',
+				  	'package.json',
+				  	'src',
+				  	'tools' ]
+				);
+			}
+			else {
+				expect(folderInfo).to.eql([ 
+					'.eslintrc.js',
+					'.steamer',
+				  	'.stylelintrc.js',
+				  	'README.md',
+				  	'config',
+				  	'node_modules',
+				  	'package.json',
+				  	'src',
+				  	'tools' ]
+				);
+			}
 
 			let steamerConfig = require(path.join(project, "config/steamer.config"));
 			expect(steamerConfig).to.eql({
@@ -221,17 +203,32 @@ describe("install", function() {
 
 			let folderInfo = fs.readdirSync(project);
 
-			expect(folderInfo).to.eql([ 
-				'.eslintrc.js',
-				'.steamer',
-			  	'.stylelintrc.js',
-			  	'README.md',
-			  	'config',
-			  	'node_modules',
-			  	'package.json',
-			  	'src',
-			  	'tools' ]
-			);
+			if (isNode8) {
+				expect(folderInfo).to.eql([ 
+					'.eslintrc.js',
+					'.steamer',
+				  	'.stylelintrc.js',
+				  	'README.md',
+				  	'config',
+				  	'package-lock.json',
+				  	'package.json',
+				  	'src',
+				  	'tools' ]
+				);
+			}
+			else {
+				expect(folderInfo).to.eql([ 
+					'.eslintrc.js',
+					'.steamer',
+				  	'.stylelintrc.js',
+				  	'README.md',
+				  	'config',
+				  	'node_modules',
+				  	'package.json',
+				  	'src',
+				  	'tools' ]
+				);
+			}
 
 			let steamerConfig = require(path.join(project, "config/steamer.config"));
 			expect(steamerConfig).to.eql({
@@ -265,17 +262,33 @@ describe("install", function() {
 			let project = path.join(PROJECT, "steamer-example");
 
 			let folderInfo = fs.readdirSync(project);
-			expect(folderInfo).to.eql([ 
-				'.eslintrc.js',
-				'.steamer',
-			  	'.stylelintrc.js',
-			  	'README.md',
-			  	'config',
-			  	'node_modules',
-			  	'package.json',
-			  	'src',
-			  	'tools' ]
-			);
+
+			if (isNode8) {
+				expect(folderInfo).to.eql([ 
+					'.eslintrc.js',
+					'.steamer',
+				  	'.stylelintrc.js',
+				  	'README.md',
+				  	'config',
+				  	'package-lock.json',
+				  	'package.json',
+				  	'src',
+				  	'tools' ]
+				);
+			}
+			else {
+				expect(folderInfo).to.eql([ 
+					'.eslintrc.js',
+					'.steamer',
+				  	'.stylelintrc.js',
+				  	'README.md',
+				  	'config',
+				  	'node_modules',
+				  	'package.json',
+				  	'src',
+				  	'tools' ]
+				);
+			}	
 
 			let steamerConfig = require(path.join(project, "config/steamer.config"));
 			expect(steamerConfig).to.eql({
@@ -329,18 +342,35 @@ describe("update", function() {
 			bkInfo = fs.readdirSync(bk),
 			bkFolderInfo = fs.readdirSync(path.join(bk, bkInfo[0]));
 
-		expect(folderInfo).to.eql([ 
-			'.eslintrc.js',
-		  	'.steamer',
-		  	'.stylelintrc.js',
-		  	'README.md',
-		  	'backup',
-		  	'config',
-		  	'node_modules',
-		  	'package.json',
-		  	'src',
-		  	'tools' 
-		]);
+		if (isNode8) {
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+			  	'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'backup',
+			  	'config',
+			  	'node_modules',
+			  	'package-lock.json',
+			  	'package.json',
+			  	'src',
+			  	'tools' 
+			]);
+		}
+		else {
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+			  	'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'backup',
+			  	'config',
+			  	'node_modules',
+			  	'package.json',
+			  	'src',
+			  	'tools' 
+			]);
+		}
 		
 		expect(bkFolderInfo).to.eql([ 
 			'.eslintrc.js',
@@ -373,18 +403,34 @@ describe("update", function() {
 			bkInfo = fs.readdirSync(bk),
 			bkFolderInfo = fs.readdirSync(path.join(bk, bkInfo[0]));
 
-		expect(folderInfo).to.eql([ 
-			'.eslintrc.js',
-		  	'.steamer',
-		  	'.stylelintrc.js',
-		  	'README.md',
-		  	'backup',
-		  	'config',
-		  	'node_modules',
-		  	'package.json',
-		  	'src',
-		  	'tools' 
-		]);
+		if (isNode8) {
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+			  	'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'backup',
+			  	'config',
+			  	'package-lock.json',
+			  	'package.json',
+			  	'src',
+			  	'tools' 
+			]);
+		}
+		else {
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+			  	'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'backup',
+			  	'config',
+			  	'node_modules',
+			  	'package.json',
+			  	'src',
+			  	'tools' 
+			]);
+		}
 		
 		expect(bkFolderInfo).to.eql([ 
 			'.eslintrc.js',
@@ -416,18 +462,34 @@ describe("update", function() {
 			bkInfo = fs.readdirSync(bk),
 			bkFolderInfo = fs.readdirSync(path.join(bk, bkInfo[0]));
 
-		expect(folderInfo).to.eql([ 
-			'.eslintrc.js',
-		  	'.steamer',
-		  	'.stylelintrc.js',
-		  	'README.md',
-		  	'backup',
-		  	'config',
-		  	'node_modules',
-		  	'package.json',
-		  	'src',
-		  	'tools' 
-		]);
+		if (isNode8) {
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+			  	'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'backup',
+			  	'config',
+			  	'package-lock.json',
+			  	'package.json',
+			  	'src',
+			  	'tools' 
+			]);
+		}
+		else {
+			expect(folderInfo).to.eql([ 
+				'.eslintrc.js',
+			  	'.steamer',
+			  	'.stylelintrc.js',
+			  	'README.md',
+			  	'backup',
+			  	'config',
+			  	'node_modules',
+			  	'package.json',
+			  	'src',
+			  	'tools' 
+			]);
+		}
 		
 		expect(bkFolderInfo).to.eql([ 
 			'.eslintrc.js',
@@ -448,6 +510,7 @@ describe("update", function() {
 
 		linkKit("steamer-example3", "unlink");
 		linkKit("steamer-example4", "unlink");
+
 	});
 
 });

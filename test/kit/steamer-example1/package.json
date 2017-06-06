@@ -26,15 +26,9 @@
     "url": "https://github.com/SteamerTeam/steamer-example/issues"
   },
   "homepage": "https://github.com/SteamerTeam/steamer-example#readme",
-  "dependencies": {
-    
-  },
-  "devDependencies": {
-    
-  },
-  "peerDependencies": {
-    
-  },
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
   "engines": {
     "node": ">=5.0.0"
   }
