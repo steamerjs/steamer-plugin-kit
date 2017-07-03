@@ -6,8 +6,8 @@ const path = require('path'),
 	  _ = require('lodash'),
 	  pluginUtils = require('steamer-pluginutils'),
 	  klawSync = require('klaw-sync'),
-	  spawnSync = require('child_process').spawnSync;
-
+	  spawnSync = require('child_process').spawnSync,
+	  polyfill = require('./libs/polyfill');
 
 function KitPlugin(argv) {
 	this.argv = argv;
