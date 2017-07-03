@@ -7,7 +7,8 @@ const path = require('path'),
 	  expect = require('expect.js'),
 	  sinon = require('sinon'),
 	  compareVersions = require('compare-versions'),
-	  spawnSync = require('child_process').spawnSync,
+	  cp = require('child_process'),
+	  spawnSync = cp.spawnSync,
 	  plugin = require('../index');
 
 var nodeVer = process.version.replace('V', '').replace('v', ''),
@@ -35,6 +36,9 @@ function userInputEnd(cb, order) {
 	}, order * 200);
 }
 
+function trimString(str) {
+    return str.replace(/(\r\n|\n|\r)/gm,"");
+}
 
 beforeEach(function() {
 	process.chdir(PROJECT);
@@ -307,6 +311,88 @@ describe("install", function() {
 		spawnSync("npm", ["uninstall", "-g", "steamer-example"], { stdio: 'inherit' });
 	});
 
+
+});
+
+describe("install template", function() {
+	
+	this.timeout(10000);
+
+	it("install template", function(done) {
+
+		this.timeout(10000);
+
+		process.chdir("./steamer-example1");
+
+		var kit = new plugin({
+			t: true,
+		});
+		kit.init();
+
+		userInput("data", "\n", 1);
+		userInput("data", "\n", 2);
+		userInput("data", "\n", 3);
+		userInput("data", "detail\n", 4);
+
+		userInputEnd(function() {
+			let folderInfo = fs.readdirSync(path.resolve("src/page/detail"));
+			expect(folderInfo).to.eql([
+				'index.css',
+				'index.html',
+				'index.js'
+			]);
+
+			let jsResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/detail.js"), "utf-8")),
+				jsContent = trimString(fs.readFileSync(path.resolve("src/page/detail/index.js"), "utf-8"));
+
+			expect(jsResultContent).to.eql(jsContent);
+
+			let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/detail.html"), "utf-8")),
+				htmlContent = trimString(fs.readFileSync(path.resolve("src/page/detail/index.html"), "utf-8"));
+
+			expect(htmlResultContent).to.eql(htmlContent);
+
+			done();
+		}, 5);
+
+	});
+
+	it("install template with template config", function(done) {
+
+		this.timeout(10000);
+
+		process.chdir("./steamer-example1");
+
+		var kit = new plugin({
+			template: true,
+		});
+		kit.init();
+
+		userInput("data", "\n", 1);
+		userInput("data", "comment\n", 2);
+
+		userInputEnd(function() {
+			let folderInfo = fs.readdirSync(path.resolve("src/page/comment"));
+			expect(folderInfo).to.eql([
+				'index.css',
+				'index.html',
+				'index.js'
+			]);
+
+			let jsResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/comment.js"), "utf-8")),
+				jsContent = trimString(fs.readFileSync(path.resolve("src/page/comment/index.js"), "utf-8"));
+
+			expect(jsResultContent).to.eql(jsContent);
+
+			let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/comment.html"), "utf-8")),
+				htmlContent = trimString(fs.readFileSync(path.resolve("src/page/comment/index.html"), "utf-8"));
+
+			expect(htmlResultContent).to.eql(htmlContent);
+
+			done();
+		}, 3);
+
+	});
 
 });
 

@@ -5,6 +5,7 @@ const path = require('path'),
 	  inquirer = require('inquirer'),
 	  _ = require('lodash'),
 	  pluginUtils = require('steamer-pluginutils'),
+	  klawSync = require('klaw-sync'),
 	  spawnSync = require('child_process').spawnSync;
 
 
@@ -27,7 +28,8 @@ KitPlugin.prototype.init = function(argv) {
 
 	let isInstall = argv.install || argv.i || false,
 		isUpdate = argv.update || argv.u || false,
-		isList = argv.list || argv.l || false;
+		isList = argv.list || argv.l || false,
+		isTemplate = argv.template || argv.t || false;
 
 	if (isInstall && isInstall !== true) {
 		isInstall = this.getKitName(isInstall);
@@ -59,7 +61,9 @@ KitPlugin.prototype.init = function(argv) {
 			kitPath = path.join(globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 			
-			this.createLocalConfig(localConfig.kit, path.resolve());
+			this.createLocalConfig({
+				kit: localConfig.kit,
+			}, path.resolve());
 		}
 		else {
 
@@ -73,6 +77,11 @@ KitPlugin.prototype.init = function(argv) {
 			throw new Error("The kit config is not found in .steamer folder");
 		}
 
+	}
+	else if (isTemplate) {
+		localConfig = this.readLocalConfig();
+		kit = localConfig.kit || null;
+		folder = path.resolve();
 	}
 	
 	let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
@@ -109,8 +118,128 @@ KitPlugin.prototype.init = function(argv) {
 	else if (isList) {
 		this.list(opts);
 	}
+	else if (isTemplate) {
+		this.template(opts);
+	}
 	else {
 		this.auto(opts);
+	}
+};
+
+KitPlugin.prototype.template = function(opts) {
+	let localConfig = opts.localConfig || {};
+
+	if (!localConfig.template || !localConfig.template.src || !localConfig.template.dist) {
+		inquirer.prompt([{
+			type: 'text',
+			name: 'src',
+			message: 'type the template source folder:',
+			default: './tools/template',
+		},{
+			type: 'input',
+			name: 'dist',
+			message: 'type your template destination folder: ',
+			default: './src/page',
+		}]).then((answers) => {
+
+			localConfig.template = {};
+			localConfig.template.src = answers.src;
+			localConfig.template.dist = answers.dist;
+
+			this.createLocalConfig(localConfig, path.resolve());
+
+			this.listTemplate(localConfig);
+		});
+	}
+	else {
+		this.listTemplate(localConfig);
+	}
+};
+
+KitPlugin.prototype.listTemplate = function(localConfig) {
+	let templateFolder = path.resolve(localConfig.template.src),
+		templateInfo = fs.readdirSync(templateFolder);
+
+	templateInfo = templateInfo.filter((item) => {
+		return fs.statSync(path.join(templateFolder, item)).isDirectory();
+	});
+
+	inquirer.prompt([{
+		type: 'list',
+		name: 'template',
+		message: 'which template do you like: ',
+		choices: templateInfo,
+	},{
+		type: 'input',
+		name: 'path',
+		message: 'type in your page name: ',
+	}]).then((answers) => {
+
+		if (!answers.path) {
+			return this.utils.error("Please type in your page name.");
+		}
+
+		let targetFolder = path.resolve(localConfig.template.dist, answers.path),
+			srcFolder = path.resolve(localConfig.template.src, answers.template);
+
+		if (fs.existsSync(targetFolder)) {
+			return this.utils.error("Target folder already exist. Please change another page name.");
+		}
+
+		fs.copySync(srcFolder, targetFolder);
+
+		this.walkAndReplace(targetFolder, [".js", ".html"], {title: answers.path});
+
+		this.installDependency(path.resolve(localConfig.template.src), answers.template);
+
+	});
+};
+
+KitPlugin.prototype.walkAndReplace = function(folder, extensions, replaceObj) {
+
+	var extensions = extensions || [],
+		replaceObj = replaceObj || {};
+
+	var files = klawSync(folder, {nodir: true});
+
+	if (extensions.length) {
+		files = files.filter((item) => {
+			let ext = path.extname(item.path);
+			return extensions.includes(ext);
+		});
+	}
+
+	files.forEach((file) => {
+		let content = fs.readFileSync(file.path, "utf-8");
+
+		Object.keys(replaceObj).forEach((key) => {
+			content = content.replace(new RegExp("<% " + key + " %>", "ig"), function(match) {
+				return replaceObj[key];
+			});
+		});
+
+		fs.writeFileSync(file.path, content, "utf-8");
+	});
+};
+
+KitPlugin.prototype.installDependency = function(templateFolder, templateName) {
+	let dependencyJson = path.join(templateFolder, "dependency.js");
+
+	if (!fs.existsSync(dependencyJson)) {
+		return;
+	}
+
+	let dependencies = require(dependencyJson) || {};
+	dependencies = dependencies[templateName] || {};
+
+	let cmd = "";
+
+	Object.keys(dependencies).forEach((item) => {
+		cmd += (item + '@' + dependencies[item] + ' ');
+	});
+
+	if (cmd) {
+		spawnSync("npm", ['install', "--save-dev", cmd], { stdio: 'inherit', shell: true });
 	}
 };
 
@@ -402,12 +531,13 @@ KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, bkFiles) {
  * @param  {String} folder [target folder]
  * @param  {Object} config [config object]
  */
-KitPlugin.prototype.createLocalConfig = function(kit, folder) {
+KitPlugin.prototype.createLocalConfig = function(conf, folder) {
 
-	let config = {
-		kit: kit,
-		version: this.pkgJson.version
-	};
+	let config = conf;
+
+	if (!config.version) {
+		config.version = this.pkgJson.version;
+	}
 
 	this.utils.createConfig(config, {
 		folder: folder,
@@ -471,7 +601,9 @@ KitPlugin.prototype.install = function(opts) {
 		this.copyPkgJson(folder);
 
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
-		this.createLocalConfig(kit, folder);
+		this.createLocalConfig({
+			kit: kit, 
+		}, folder);
 
 		this.utils.info(kit + " install success");
 

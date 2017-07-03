@@ -95,6 +95,70 @@ steamer kit -u react
 
 该命令主要是更新项目中的 `package.json`， `readme`， 和 `tools`文件夹，然后将这三个旧的文件（夹）备份到 backup 目录下（有时间戳的文件夹），其余文件保持不变。如果有改动到tools下面构建相关的逻辑，可能需要手动进行更新。
 
+* 生成模板
+
+一些脚手架为了快速开发，会整理了一些模板。可以用以下命令快速从模板源文件中生成页面到对应的目录下。
+
+假如模板存放在脚手架中的 `tools/template/` 目录里，其中模板 `list` 有以下文件：
+
+```
+// index.js
+var a = 123;
+var b = ""<% title %>
+
+// index.html
+<script src="js/<% title %>"></script>
+<link rel="stylesheet" href="js/<% title %>">
+```
+
+使用以下命令，可以快速开始生成模板：
+
+```javascript
+steamer kit --template
+// 或
+steamer kit -t
+```
+
+如果脚手架上没有 `template` 配置，命令行会先分别询问模板的源目录、目标目录是什么，输入后，会自动生成到配置中，然后会列出模板源目录中所有的可用模板，然后选择其中一个，再输入生成后的页面名称，即可生成模板目录。 上面文件内容中的 <% title %> 会自动匹配成页面的名称。
+
+```javascript
+? type the template source folder: ./tools/template
+? type your template destination folder:  ./src/page
+which template do you like:  (Use arrow keys)
+❯ index
+  list
+  preact-list
+  spa
+? type in your page name:  detail
+```
+
+```javascript
+// template配置后的脚手架配置信息，位置在 .steamer/steamer-plugin-kit中
+
+module.exports = {
+    "plugin": "steamer-plugin-kit",
+    "config": {
+        "kit": "steamer-example1",
+        "version": "2.0.0",
+        "template": {
+            "src": "./tools/template",
+            "dist": "./src/page"
+        }
+    }
+};
+```
+
+有些模板可能有自己特殊的依赖，可以在模板源目录中，新建一个 `dependency.js` 的依赖配置文件，然后写入模板对应的依赖，那么生成模板的时候，会自动安装相应的依赖。
+
+```javascript
+module.exports = {
+	"list": {
+		"react-list-scroll": "^1.0.2",
+		"react-touch-component": "^1.1.1"
+	}
+}
+```
+
 
 ### 开发
 
