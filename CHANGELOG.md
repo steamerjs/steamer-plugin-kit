@@ -3,6 +3,7 @@
 
 ## 1.2.10
 	- 更新 steamer-pluginutils
+	- 兼容 npm link 本地调试的时候 require 全局安装kit 的情况
 
 ## 1.2.9
 	- 更新 steamer-pluginutils

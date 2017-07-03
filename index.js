@@ -347,8 +347,14 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 	let kitConfig = {};
 
 	try {
-		this.utils.addRequirePath(this.utils.globalNodeModules);
-		kitConfig = require(kit);
+		let kitPath = path.join(this.utils.globalNodeModules, kit);
+
+		if (fs.existsSync(kitPath)) {
+			kitConfig = require(kitPath);
+		}
+		else {
+			kitConfig = require(kit);
+		}
 	}
 	catch(e) {
 		
