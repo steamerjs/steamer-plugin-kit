@@ -82,6 +82,25 @@ KitPlugin.prototype.init = function(argv) {
 		localConfig = this.readLocalConfig();
 		kit = localConfig.kit || null;
 		folder = path.resolve();
+		
+		// if .steamer/steamer-plugin-kit.js not exist
+		let kitConfigPath = path.join(process.cwd(), "./steamer/steamer-plugin-kit.js");
+
+		if (!fs.existsSync(kitConfigPath)) {
+
+			let pkgJsonPath = path.join(process.cwd(), "package.json");
+
+			if (fs.existsSync(pkgJsonPath)) {
+				this.pkgJson = require(path.join(process.cwd(), "package.json")) || {};
+
+				this.createLocalConfig({
+					kit: this.pkgJson.name,
+				}, process.cwd());
+			}
+			else {
+				throw new Error("The config file ./steamer/steamer-plugin-kit.js is required");
+			}
+		}
 	}
 	
 	let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
