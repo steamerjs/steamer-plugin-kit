@@ -1,4 +1,4 @@
-## steamer-plugin-kit
+# steamer-plugin-kit
 
 starter kit 管理命令
 
@@ -7,14 +7,14 @@ starter kit 管理命令
 [![Deps](https://david-dm.org/steamerjs/steamer-plugin-kit.svg)](https://david-dm.org/steamerjs/steamer-plugin-kit)
 [![Coverage](https://img.shields.io/coveralls/steamerjs/steamer-plugin-kit.svg)](https://coveralls.io/github/steamerjs/steamer-plugin-kit)
 
-### 安装
+## 安装
 ```javascript
 npm i -g steamerjs
 
 npm i -g steamer-plugin-kit
 ```
 
-### 使用
+## 使用
 
 * 全局安装你想用的脚手架
 
@@ -160,7 +160,7 @@ module.exports = {
 ```
 
 
-### 开发
+## 开发
 
 将此模块链接到全局下
 
@@ -186,7 +186,7 @@ npm i -g steamer-example // 安装测试中使用到的steamer-example 脚手架
 npm test
 ```
 
-### Starter Kit 的例子
+## Starter Kit 的例子
 符合 `steamer` 规范的 `Starter Kit`，可以参考 [steamer-example](https://github.com/steamerjs/steamer-example/)，并仿照规范，进行接入。
 
 官方 Starter Kit:
