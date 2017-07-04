@@ -331,8 +331,9 @@ describe("install template", function() {
 
 		userInput("data", "\n", 1);
 		userInput("data", "\n", 2);
-		userInput("data", "\n", 3);
-		userInput("data", "detail\n", 4);
+		userInput("data", "npm\n", 3);
+		userInput("data", "\n", 4);
+		userInput("data", "detail\n", 5);
 
 		userInputEnd(function() {
 			let folderInfo = fs.readdirSync(path.resolve("src/page/detail"));
@@ -353,7 +354,7 @@ describe("install template", function() {
 			expect(htmlResultContent).to.eql(htmlContent);
 
 			done();
-		}, 5);
+		}, 6);
 
 	});
 

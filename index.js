@@ -84,7 +84,7 @@ KitPlugin.prototype.init = function(argv) {
 		folder = path.resolve();
 		
 		// if .steamer/steamer-plugin-kit.js not exist
-		let kitConfigPath = path.join(process.cwd(), "./steamer/steamer-plugin-kit.js");
+		let kitConfigPath = path.join(process.cwd(), "./.steamer/steamer-plugin-kit.js");
 
 		if (!fs.existsSync(kitConfigPath)) {
 
@@ -159,15 +159,23 @@ KitPlugin.prototype.template = function(opts) {
 			name: 'dist',
 			message: 'type your template destination folder: ',
 			default: './src/page',
+		},{
+			type: 'input',
+			name: 'npm',
+			message: 'type your npm command(npm|tnpm|cnpm etc): ',
+			default: 'npm',
 		}]).then((answers) => {
 
 			localConfig.template = {};
 			localConfig.template.src = answers.src;
 			localConfig.template.dist = answers.dist;
+			localConfig.template.npm = answers.npm;
 
 			this.createLocalConfig(localConfig, path.resolve());
 
 			this.listTemplate(localConfig);
+		}).catch((e) => {
+			this.utils.error(e.statck);
 		});
 	}
 	else {
@@ -209,8 +217,10 @@ KitPlugin.prototype.listTemplate = function(localConfig) {
 
 		this.walkAndReplace(targetFolder, [".js", ".html"], {title: answers.path});
 
-		this.installDependency(path.resolve(localConfig.template.src), answers.template);
+		this.installDependency(path.resolve(localConfig.template.src), answers.template, localConfig.template.npm);
 
+	}).catch((e) => {
+		this.utils.error(e.statck);
 	});
 };
 
@@ -241,8 +251,9 @@ KitPlugin.prototype.walkAndReplace = function(folder, extensions, replaceObj) {
 	});
 };
 
-KitPlugin.prototype.installDependency = function(templateFolder, templateName) {
-	let dependencyJson = path.join(templateFolder, "dependency.js");
+KitPlugin.prototype.installDependency = function(templateFolder, templateName, npm) {
+	let dependencyJson = path.join(templateFolder, "dependency.js"),
+		npmCmd = npm || 'npm';
 
 	if (!fs.existsSync(dependencyJson)) {
 		return;
@@ -258,7 +269,7 @@ KitPlugin.prototype.installDependency = function(templateFolder, templateName) {
 	});
 
 	if (cmd) {
-		spawnSync("npm", ['install', "--save-dev", cmd], { stdio: 'inherit', shell: true });
+		spawnSync(npmCmd, ['install', "--save-dev", cmd], { stdio: 'inherit', shell: true });
 	}
 };
 
