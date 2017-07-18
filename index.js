@@ -57,8 +57,7 @@ KitPlugin.prototype.init = function(argv) {
 			kit = localConfig.kit;
 
 			kitConfig = this.getKitConfig(kit);
-
-			kitPath = path.join(globalNodeModules, kit);
+			kitPath = this.getKitPath(globalNodeModules, kit);
 			this.getPkgJson(kitPath);
 			
 			this.createLocalConfig({
@@ -181,6 +180,17 @@ KitPlugin.prototype.template = function(opts) {
 	else {
 		this.listTemplate(localConfig);
 	}
+};
+
+KitPlugin.prototype.getKitPath = function(globalNodeModules, kit) {
+	let kitPath = path.join(__dirname, '../../', kit);
+
+	if (!fs.existsSync(kitPath)) {
+		kitPath = path.join(globalNodeModules, kit);
+	}
+
+	console.log(kitPath);
+	return kitPath;
 };
 
 KitPlugin.prototype.listTemplate = function(localConfig) {
