@@ -1,7 +1,6 @@
 "use strict";
 
 const path = require('path'),
-	  fs = require('fs-extra'),
 	  inquirer = require('inquirer'),
 	  _ = require('lodash'),
 	  pluginUtils = require('steamer-pluginutils'),
@@ -9,9 +8,12 @@ const path = require('path'),
 	  spawnSync = require('child_process').spawnSync,
 	  polyfill = require('./libs/polyfill');
 
+var fs = null;
+
 function KitPlugin(argv) {
 	this.argv = argv;
 	this.utils = new pluginUtils("steamer-plugin-kit");
+	fs = this.utils.fs;
 	this.prefix = "steamer-";
 }
 
@@ -73,7 +75,8 @@ KitPlugin.prototype.init = function(argv) {
 		}
 
 		if (!localConfig || !localConfig.kit) {
-			throw new Error("The kit config is not found in .steamer folder");
+			this.printIfConfigNotFound();
+			throw new Error(".steamer not found.");
 		}
 
 	}
@@ -97,7 +100,8 @@ KitPlugin.prototype.init = function(argv) {
 				}, process.cwd());
 			}
 			else {
-				throw new Error("The config file ./steamer/steamer-plugin-kit.js is required");
+				this.printIfConfigNotFound();
+				throw new Error(".steamer not found.");
 			}
 		}
 	}
@@ -144,6 +148,16 @@ KitPlugin.prototype.init = function(argv) {
 	}
 };
 
+KitPlugin.prototype.printIfConfigNotFound = function() {
+	this.utils.error("The config file ./steamer/steamer-plugin-kit.js is required");
+	this.utils.error("There may be 2 reasons:");
+	this.utils.error("1. You are not in the right folder after installation.");
+	this.utils.error("2. You really do not have .steamer folder in the project.\n\n");
+};
+
+/**
+ * create page based on templates
+ */
 KitPlugin.prototype.template = function(opts) {
 	let localConfig = opts.localConfig || {};
 
@@ -289,6 +303,10 @@ KitPlugin.prototype.installDependency = function(templateFolder, templateName, n
 KitPlugin.prototype.auto = function(opts) {
 	let kits = this.listKit(opts);
 
+	if (!kits.length) {
+		return this.printIfKitEmpty();
+	}
+
 	inquirer.prompt([{
 		type: 'list',
 		name: 'kit',
@@ -309,7 +327,15 @@ KitPlugin.prototype.auto = function(opts) {
 			});
 		}
 
+	}).catch((e) => {
+		this.utils.error(e.stack);
 	});
+};
+
+KitPlugin.prototype.printIfKitEmpty = function() {
+	this.utils.warn("No starter kits are found. There may be two reasons:");
+	this.utils.warn("1. You have not set Node_PATH.");
+	this.utils.warn("2. You do not install any starter kits.");
 };
 
 /**
@@ -348,11 +374,12 @@ KitPlugin.prototype.listKit = function(opts) {
 		}
 		else {
 			let pkgJson = require(path.join(globalNodeModules, item, "package.json")),
-				keywords = pkgJson.keywords || [];
+				keywords = pkgJson.keywords || [],
+				des = pkgJson.description || '';
 
 			// console.log(item, keywords);
 			if (!!~keywords.indexOf("steamer starterkit")) {
-				kits.push(item);
+				kits.push(item + ': ' + des);
 			}
 		}
 	});
@@ -367,10 +394,11 @@ KitPlugin.prototype.listKit = function(opts) {
 
 		pkgs.forEach((item2) => {
 			let pkgJson = require(path.join(globalNodeModules, item1, item2, "package.json")),
-				keywords = pkgJson.keywords || [];
+				keywords = pkgJson.keywords || [],
+				des = pkgJson.description || '';
 
 			if (!!~keywords.indexOf("steamer starterkit")) {
-				kits.push(item1 + "/" + item2);
+				kits.push(item1 + "/" + item2 + ': ' + des);
 			}
 		});
 
@@ -631,7 +659,7 @@ KitPlugin.prototype.install = function(opts) {
 		var npm = answers.npm;
 		delete answers['npm'];
 
-		console.log(answers);
+		// console.log(answers);
 		
 		// init config
 		answers.webserver = answers.webserver || "//localhost:9000/";
@@ -652,9 +680,12 @@ KitPlugin.prototype.install = function(opts) {
 		}, folder);
 
 		this.utils.info(kit + " install success");
+		this.utils.info("The project path is: " + path.resolve(folder));
 
 		this.installPkg(folder, npm);
 
+	}).catch((e) => {
+		this.utils.error(e.stack);
 	});
 };
 

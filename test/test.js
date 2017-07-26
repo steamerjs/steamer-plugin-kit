@@ -73,8 +73,8 @@ describe("install", function() {
 
 		kit.init();
 
-		expect(infoStub.calledWith("example1")).to.be(true);
-		expect(infoStub.calledWith("@tencent/example2")).to.be(true);
+		expect(infoStub.calledWith("example1: steamer starter kit example")).to.be(true);
+		expect(infoStub.calledWith("@tencent/example2: steamer starter kit example")).to.be(true);
 
 		infoStub.restore();
 	});
