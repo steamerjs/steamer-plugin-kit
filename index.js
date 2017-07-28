@@ -429,9 +429,21 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 		if (e.code === 'MODULE_NOT_FOUND') {
 			this.utils.info(kit + ' is not found. Start installing...');
 		}
-
+		
 		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit', shell: true });
-		kitConfig = require(kit);
+		
+		try {
+			kitConfig = require(kit);
+		}
+		catch(e) {
+			if (e.code === 'MODULE_NOT_FOUND') {
+				this.utils.error(kit + " is not installed. One of following three reasons may cause this issue: ");
+				this.utils.warn("1. You do not install this starterkit.");
+				this.utils.warn("2. The starterkit is not in https://www.npmjs.com/.");
+				this.utils.warn("3. You install the starterkit but forget to set NODE_PATH.");
+				throw new Error(kit + " is not installed. ");
+			}
+		}
 	}
 
 	return kitConfig;
