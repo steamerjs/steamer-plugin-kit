@@ -534,7 +534,7 @@ KitPlugin.prototype.getPkgJson = function(kitPath) {
  * @param  {String} kitPath [starter kit global path]
  * @param  {String} folder [new package.json destination folder]
  */
-KitPlugin.prototype.copyPkgJson = function(folder) {
+KitPlugin.prototype.copyPkgJson = function(folder, status = 'install') {
 	let pkgJson = {
 	  	"name": "",
 	  	"version": "",
@@ -562,11 +562,19 @@ KitPlugin.prototype.copyPkgJson = function(folder) {
 
 	let pkgJsonFile = path.join(folder, "package.json");
 
-	pkgJson = _.merge({}, this.oldPkgJson, {
-		version: pkgJson.version,
-		dependencies: pkgJson.dependencies,
-		devDependencies: pkgJson.devDependencies,
-	});
+	if (status === 'update') {
+		pkgJson = _.merge({}, this.oldPkgJson, {
+			version: pkgJson.version,
+			dependencies: pkgJson.dependencies,
+			devDependencies: pkgJson.devDependencies,
+		});
+	}
+	else {
+		if (fs.existsSync(pkgJsonFile)) {
+			let pkgJsonContent = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8") || "{}");
+			pkgJson = _.merge({}, pkgJsonContent, pkgJson);
+		}
+	}
 
 	fs.writeFileSync(path.join(folder, "package.json"), JSON.stringify(pkgJson, null, 4), "utf-8");
 };
@@ -699,7 +707,7 @@ KitPlugin.prototype.install = function(opts) {
 		// copy template files
 		this.copyFiles(kitPath, cpyFiles, folder, config);
 
-		this.copyPkgJson(folder);
+		this.copyPkgJson(folder, 'install');
 
 		// create config file, for example in ./.steamer/steamer-plugin-kit.js
 		this.createLocalConfig({
@@ -750,7 +758,7 @@ KitPlugin.prototype.update = function(opts) {
 	// copy files excluding src
 	this.copyFilterFiles(kitPath, folder, bkFiles);
 
-	this.copyPkgJson(folder);
+	this.copyPkgJson(folder, 'update');
 
 	this.utils.info(kit + " update success");
 };
