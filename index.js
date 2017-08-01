@@ -15,6 +15,8 @@ function KitPlugin(argv) {
 	this.utils = new pluginUtils("steamer-plugin-kit");
 	fs = this.utils.fs;
 	this.prefix = "steamer-";
+	// 旧的项目pkgjson内容，在脚手架更新的时候有用。
+	this.oldPkgJson = {};
 }
 
 KitPlugin.prototype.init = function(argv) {
@@ -347,7 +349,7 @@ KitPlugin.prototype.list = function(opts) {
 
 	this.utils.warn("steamer starterkit:");
 	kits.map((kit) => {
-		this.utils.info(kit);
+		this.utils.info(kit.name);
 	});
 };
 
@@ -379,7 +381,10 @@ KitPlugin.prototype.listKit = function(opts) {
 
 			// console.log(item, keywords);
 			if (!!~keywords.indexOf("steamer starterkit")) {
-				kits.push(item + ': ' + des);
+				kits.push({
+					name: item + ': ' + des,
+					value: item
+				});
 			}
 		}
 	});
@@ -398,14 +403,18 @@ KitPlugin.prototype.listKit = function(opts) {
 				des = pkgJson.description || '';
 
 			if (!!~keywords.indexOf("steamer starterkit")) {
-				kits.push(item1 + "/" + item2 + ': ' + des);
+				kits.push({
+					name: item1 + "/" + item2 + ': ' + des,
+					value: item1 + "/" + item2
+				});
 			}
 		});
 
 	});
 
 	kits = kits.map((item) => {
-		return item.replace("steamer-", "");
+		item.name = item.name.replace("steamer-", "");
+		return item;
 	});
 
 	return kits;
@@ -553,10 +562,11 @@ KitPlugin.prototype.copyPkgJson = function(folder) {
 
 	let pkgJsonFile = path.join(folder, "package.json");
 
-	if (fs.existsSync(pkgJsonFile)) {
-		let pkgJsonContent = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8") || "{}");
-		pkgJson = _.merge({}, pkgJsonContent, pkgJson);
-	}
+	pkgJson = _.merge({}, this.oldPkgJson, {
+		version: pkgJson.version,
+		dependencies: pkgJson.dependencies,
+		devDependencies: pkgJson.devDependencies,
+	});
 
 	fs.writeFileSync(path.join(folder, "package.json"), JSON.stringify(pkgJson, null, 4), "utf-8");
 };
@@ -587,6 +597,11 @@ KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
 
 		if (fs.existsSync(file)) {
 			fs.copySync(file, path.join(folder, destFolder, item));
+
+			if (item === "package.json") {
+				this.oldPkgJson = require(file);
+			}
+
 			fs.removeSync(file);
 		}
 	});
