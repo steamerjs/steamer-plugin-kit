@@ -534,7 +534,7 @@ KitPlugin.prototype.getPkgJson = function(kitPath) {
  * @param  {String} kitPath [starter kit global path]
  * @param  {String} folder [new package.json destination folder]
  */
-KitPlugin.prototype.copyPkgJson = function(folder, status = 'install') {
+KitPlugin.prototype.copyPkgJson = function(folder, status) {
 	let pkgJson = {
 	  	"name": "",
 	  	"version": "",
