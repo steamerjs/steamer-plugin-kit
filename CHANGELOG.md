@@ -1,3 +1,6 @@
+## 1.3.0
+	- 升级steamer-pluginutils
+
 ## 1.2.18
    - 修复安装 bug
 
