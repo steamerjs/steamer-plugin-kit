@@ -39,6 +39,16 @@ steamer kit -l
 此命令会罗列所有 符合 [steamer 脚手架规范](https://github.com/steamerjs/steamer-example/#如何开发一个-steamer-规范的-starterkit) 的脚手架，你可以选择并进行安装：
 ```javascript
 steamer kit
+
+? which starterkit do you like:  (Use arrow keys)
+  Local installed Starter Kits:
+❯ simple: alloyteam frameworkless starterkit
+  Other official Starter Kits:
+  react: alloyteam react starterkit
+  vue: alloyteam vue starterkit
+  simple-component: alloyteam frameworkless component development starterkit
+  react-component: alloyteam react component development starterkit
+  vue-component: alloyteam vue component development starterkit
 ```
 
 或者，你可以通过 `steamer` 命令，指定 `starter kit`， 并拷贝到指定目录和初始化脚手架：
