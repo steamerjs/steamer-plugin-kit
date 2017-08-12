@@ -305,8 +305,14 @@ KitPlugin.prototype.installDependency = function(templateFolder, templateName, n
 KitPlugin.prototype.auto = function(opts) {
 	let kits = this.listKit(opts);
 
-	if (!kits.length) {
-		return this.printIfKitEmpty();
+	// if (!kits.length) {
+	// 	this.printIfKitEmpty();
+	// }
+
+	kits = this.addOfficialKits(kits);
+
+	if (kits[0].type !== 'separator') {
+		kits.unshift(new inquirer.Separator("Local installed Starter Kits:"));
 	}
 
 	inquirer.prompt([{
@@ -314,6 +320,7 @@ KitPlugin.prototype.auto = function(opts) {
 		name: 'kit',
 		message: 'which starterkit do you like: ',
 		choices: kits,
+		pageSize: 50,
 	},{
 		type: 'input',
 		name: 'path',
@@ -332,6 +339,44 @@ KitPlugin.prototype.auto = function(opts) {
 	}).catch((e) => {
 		this.utils.error(e.stack);
 	});
+};
+
+KitPlugin.prototype.addOfficialKits = function(kits) {
+
+	kits.push(new inquirer.Separator("Other official Starter Kits:"));
+
+	var officialKits = [
+		{ 
+			name: 'simple: alloyteam frameworkless starterkit',
+    		value: 'steamer-simple' 
+    	},
+    	{
+    		name: 'react: alloyteam react starterkit',
+    		value: 'steamer-react',
+    	},
+    	{
+    		name: 'vue: alloyteam vue starterkit',
+    		value: 'steamer-vue',
+    	},
+    	{
+    		name: 'simple-component: alloyteam frameworkless component development starterkit',
+    		value: 'steamer-simple-component',
+    	},
+    	{
+    		name: 'react-component: alloyteam react component development starterkit',
+    		value: 'steamer-react-component',
+    	},
+    	{
+    		name: 'vue-component: alloyteam vue component development starterkit',
+    		value: 'steamer-vue-component',
+    	},
+	];
+
+	kits = _.uniqBy(kits.concat(officialKits), 'value');
+
+	// console.log(kits);
+
+	return kits;
 };
 
 KitPlugin.prototype.printIfKitEmpty = function() {
@@ -421,10 +466,11 @@ KitPlugin.prototype.listKit = function(opts) {
 };
 
 KitPlugin.prototype.getKitConfig = function(kit) {
-	let kitConfig = {};
+	let kitConfig = {},
+		kitPath;
 
 	try {
-		let kitPath = path.join(this.utils.globalNodeModules, kit);
+		kitPath = path.join(this.utils.globalNodeModules, kit);
 
 		if (fs.existsSync(kitPath)) {
 			kitConfig = require(kitPath);
@@ -440,16 +486,16 @@ KitPlugin.prototype.getKitConfig = function(kit) {
 		}
 		
 		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit', shell: true });
-		
+
 		try {
-			kitConfig = require(kit);
+			kitConfig = require(kitPath);
 		}
 		catch(e) {
 			if (e.code === 'MODULE_NOT_FOUND') {
 				this.utils.error(kit + " is not installed. One of following three reasons may cause this issue: ");
 				this.utils.warn("1. You do not install this starterkit.");
-				this.utils.warn("2. The starterkit is not in https://www.npmjs.com/.");
-				this.utils.warn("3. You install the starterkit but forget to set NODE_PATH.");
+				this.utils.warn("2. The starterkit is not in global node_modules.");
+				this.utils.warn("3. You install the starterkit but forget to set NODE_PATH which points to global node_modules.");
 				throw new Error(kit + " is not installed. ");
 			}
 		}
