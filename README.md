@@ -23,7 +23,7 @@ npm i -g steamer-plugin-kit@latest
 steamer update
 ```
 
-## 使用
+## 使用 -- 部署脚手架
 
 * 全局安装你想用的脚手架
 
@@ -87,6 +87,8 @@ steamer kit --list
 steamer kit -l
 ```
 
+## 使用 -- 更新脚手架
+
 * 更新项目脚手架
 
 如果脚手架有更新，首先全局更新脚手架
@@ -116,6 +118,8 @@ steamer kit -u react
 ```
 
 该命令主要是更新项目中的 `package.json`， `readme`， 和 `tools`文件夹，然后将这三个旧的文件（夹）备份到 backup 目录下（有时间戳的文件夹），其余文件保持不变。如果有改动到tools下面构建相关的逻辑，可能需要手动进行更新。
+
+## 使用 -- 在脚手架中生成模板
 
 * 生成模板
 
