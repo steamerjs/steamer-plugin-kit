@@ -7,11 +7,20 @@ starter kit 管理命令
 [![Deps](https://david-dm.org/steamerjs/steamer-plugin-kit.svg)](https://david-dm.org/steamerjs/steamer-plugin-kit)
 [![Coverage](https://img.shields.io/coveralls/steamerjs/steamer-plugin-kit.svg)](https://coveralls.io/github/steamerjs/steamer-plugin-kit)
 
+
 ## 安装
 ```javascript
 npm i -g steamerjs
 
 npm i -g steamer-plugin-kit
+```
+
+## 更新
+```
+npm i -g steamer-plugin-kit@latest
+
+// 或者
+steamer update
 ```
 
 ## 使用
@@ -24,14 +33,6 @@ npm i -g steamer-plugin-kit
 
 npm i -g steamer-react
 
-```
-
-* 罗列脚手架
-
-```javascript
-steamer kit --list
-// 或
-steamer kit -l
 ```
 
 * 部署脚手架
@@ -76,13 +77,20 @@ steamer kit -i @tencent/react
 
 脚手架部署完成后，它会帮你自动进入项目中，运行 `npm install`。你也可以通过中止命令，选用其它安装工具例如 `yarn` 进行依赖安装。
 
+* 罗列脚手架
+
+```javascript
+steamer kit --list
+// 或
+steamer kit -l
+```
 
 * 更新项目脚手架
 
 如果脚手架有更新，首先全局更新脚手架
 
 ```javascript
-npm update -g steamer-react
+npm install -g steamer-react@latest
 ```
 
 然后进入项目目录中，进行更新
