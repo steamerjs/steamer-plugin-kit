@@ -31,7 +31,9 @@ steamer update
 
 ```javascript
 
-npm i -g steamer-react
+// 官方推荐脚手架
+npm i -g steamer-react steamer-vue steamer-simple 
+npm i -g steamer-react-component steamer-vue-component steamer-simple component
 
 ```
 
