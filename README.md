@@ -171,7 +171,7 @@ module.exports = {
 };
 ```
 
-有些模板可能有自己特殊的依赖，可以在模板源目录中，新建一个 `dependency.js` 的依赖配置文件，然后写入模板对应的依赖，那么生成模板的时候，会自动安装相应的依赖。
+有些模板可能有自己特殊的依赖，可以在模板源目录中，新建一个 `dependency.js`的依赖配置文件，然后写入模板对应的依赖，那么生成模板的时候，会自动安装相应的依赖。可参考 `steamer-react` 的[dependency.js](https://github.com/steamerjs/steamer-react/blob/master/tools/template/dependency.js)
 
 ```javascript
 module.exports = {
