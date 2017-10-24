@@ -1,838 +1,801 @@
-"use strict";
+'use strict';
 
-const path = require('path'),
-	  inquirer = require('inquirer'),
-	  _ = require('lodash'),
-	  pluginUtils = require('steamer-pluginutils'),
-	  klawSync = require('klaw-sync'),
-	  spawnSync = require('child_process').spawnSync,
-	  polyfill = require('./libs/polyfill');
+const SteamerPlugin = require('steamer-plugin'),
+    path = require('path'),
+    inquirer = require('inquirer'),
+    _ = require('lodash'),
+    klawSync = require('klaw-sync'),
+    spawnSync = require('child_process').spawnSync;
 
-var fs = null;
+/**
+ * // .steamer/steamer.plugin-kit.js
+     module.exports = {
+        'plugin': 'steamer-plugin-kit',
+        'config': {
+            'kit': 'steamer-react'
+        }
+    }
+*/
 
-function KitPlugin(argv) {
-	this.argv = argv;
-	this.utils = new pluginUtils("steamer-plugin-kit");
-	fs = this.utils.fs;
-	this.prefix = "steamer-";
-	// 旧的项目pkgjson内容，在脚手架更新的时候有用。
-	this.oldPkgJson = {};
+class KitPlugin extends SteamerPlugin {
+    constructor(args) {
+        super(args);
+        this.argv = args;
+        this.pluginName = 'steamer-plugin-kit';
+        this.description = 'manage starterkits';
+        this.globalNodeModules = this.getGlobalModules();
+
+        this.prefix = 'steamer-';
+
+        this.pkgJson = {};
+        // 旧的项目pkgjson内容，在脚手架更新的时候有用。
+        this.oldPkgJson = {};
+    }
+
+    init(argv) {
+
+        let argvs = argv || this.argv; // command argv
+
+        // command argv
+        let isInstall = argvs.install || argvs.i || false,
+            isUpdate = argvs.update || argvs.u || false,
+            isList = argvs.list || argvs.l || false,
+            isTemplate = argvs.template || argvs.t || false;
+
+        if (isInstall && isInstall !== true) {
+            return this.install({
+                isInstall,
+                argvs
+            });
+        }
+        else if (isUpdate) {
+            return this.update({
+                isUpdate
+            });
+        }
+        else if (isList) {
+            return this.list();
+        }
+        else if (isTemplate) {
+            return this.template({
+
+            });
+        }
+        else {
+            return this.auto();
+        }
+    }
+
+    /**
+     * [install kit]
+     * @param  {Object} opts [options]
+     */
+    install(opts) {
+        let argvs = opts.argvs,
+            isInstall = opts.isInstall,
+            kit = this.getKitName(isInstall),  // kit name, for example, steamer-react
+            kitPath = path.join(this.globalNodeModules, kit),  // steamer-react global module
+            folder = argvs.path || argvs.p || this.getFolderName(kit); // target folder
+
+        this.checkFolderExist(folder);
+
+        let kitConfig = this.getKitConfig(kit),
+            copyAndBackupFiles = this.copyAndBackup(kitConfig),
+            cpyFiles = copyAndBackupFiles.cpyFiles,
+            inquirerConfig = kitConfig.options;
+
+        this.pkgJson = this.getPkgJson(kitPath);
+
+        let config = null;
+
+        inquirerConfig.push({
+            type: 'input',
+            name: 'npm',
+            message: 'npm install command(npm, cnpm, yarn, tnpm, etc)',
+            default: 'npm'
+        });
+
+        inquirer.prompt(
+            inquirerConfig
+        ).then((answers) => {
+            let npm = answers.npm;
+            delete answers['npm'];
+
+            // init config
+            answers.webserver = answers.webserver || '//localhost:9000/';
+            answers.cdn = answers.cdn || '//localhost:8000/';
+            answers.port = answers.port || 9000;
+
+            config = _.merge({}, answers);
+
+            // copy template files
+            this.copyFiles(kitPath, cpyFiles, folder, config);
+
+            this.copyPkgJson(folder, 'install');
+
+            // create config file, for example in ./.steamer/steamer-plugin-kit.js
+            this.createPluginConfig({
+                kit: kit,
+            }, folder);
+
+            this.info(kit + ' install success');
+            this.info('The project path is: ' + path.resolve(folder));
+
+            this.installPkg(folder, npm);
+
+        }).catch((e) => {
+            this.error(e.stack);
+        });
+    }
+
+    /**
+     * [get kit name]
+     * @param  {String} pkg [starter kit name]
+     * @return {String}     [kit name]
+     */
+    getKitName(pkg) {
+        let pkgArr = pkg.split('/');
+
+        if (pkgArr.length === 2) {
+            pkgArr[1] = (~pkgArr[1].indexOf(this.prefix)) ? pkgArr[1] : this.prefix + pkgArr[1];
+        }
+        else if (pkgArr.length === 1) {
+            pkgArr[0] = (~pkgArr[0].indexOf(this.prefix)) ? pkgArr[0] : this.prefix + pkgArr[0];
+        }
+
+        pkg = pkgArr.join('/');
+
+        return pkg;
+    }
+
+    getFolderName(kit) {
+        let pkgArr = kit.split('/');
+
+        if (pkgArr.length === 2) {
+            return pkgArr[1];
+        }
+        else if (pkgArr.length === 1) {
+            return pkgArr[0];
+        }
+
+    }
+
+    getKitConfig(kit) {
+        let kitConfig = {},
+            kitPath;
+
+        try {
+            kitPath = path.join(this.globalNodeModules, kit);
+
+            if (this.fs.existsSync(kitPath)) {
+                kitConfig = require(kitPath);
+            }
+            else {
+                kitConfig = require(kit);
+            }
+        }
+        catch (e) {
+
+            if (e.code === 'MODULE_NOT_FOUND') {
+                this.info(kit + ' is not found. Start installing...');
+            }
+
+            spawnSync('npm', ['install', '--global', kit], { stdio: 'inherit', shell: true });
+
+            try {
+                kitConfig = require(kitPath);
+            }
+            catch (e) {
+                if (e.code === 'MODULE_NOT_FOUND') {
+                    this.error(kit + ' is not installed. One of following three reasons may cause this issue: ');
+                    this.warn('1. You do not install this starterkit.');
+                    this.warn('2. The starterkit is not in global node_modules.');
+                    this.warn('3. You install the starterkit but forget to set NODE_PATH which points to global node_modules.');
+                    throw new Error(kit + ' is not installed. ');
+                }
+            }
+        }
+
+        return kitConfig;
+    }
+
+    copyAndBackup(kitConfig) {
+        let cpyFiles = this.filterCopyFiles(kitConfig.files), // files needed to be copied
+            bkFiles = _.merge([], kitConfig.files, ['package.json']); // backup files
+
+        return {
+            cpyFiles,
+            bkFiles
+        };
+    }
+
+    filterCopyFiles(files) {
+        let f = [];
+        f = f.concat(files);
+        // default copied files and folders
+        f.push('src', 'tools', 'config', 'README.md');
+        f = _.uniq(f);
+
+        return f;
+    }
+
+    /**
+     * [get info from package.json]
+     * @param  {String} kitPath [starter kit global path]
+     */
+    getPkgJson(kitPath) {
+        let pkgJsonFile = path.resolve(kitPath, 'package.json');
+
+        return JSON.parse(this.fs.readFileSync(pkgJsonFile, 'utf-8'));
+    }
+
+    /**
+     * [copy files]
+     * @param  {String} kitPath [kit global module path]
+     * @param  {String} folder  [target folder]
+     * @param  {String} tpl     [config template]
+     */
+    copyFiles(kitPath, cpyFiles, folder, config) {
+
+        cpyFiles.map((item) => {
+            try {
+                let srcFile = path.join(kitPath, item),
+                    destFile = path.join(folder, item);
+
+                if (this.fs.existsSync(srcFile)) {
+                    this.fs.copySync(srcFile, destFile);
+                }
+            }
+            catch (e) {
+                this.error(e.stack);
+            }
+        });
+
+        this.fs.ensureFileSync(path.join(folder, 'config/steamer.config.js'));
+        this.fs.writeFileSync(path.join(folder, 'config/steamer.config.js'), 'module.exports = ' + JSON.stringify(config, null, 4));
+    }
+
+    /**
+     * [create package.json]
+     * @param  {String} kitPath [starter kit global path]
+     * @param  {String} folder [new package.json destination folder]
+     */
+    copyPkgJson(folder, status) {
+        let pkgJson = {
+            'name': '',
+            'version': '',
+            'description': '',
+            'scripts': {},
+            'author': '',
+        };
+
+        let pkgJsonSrc = this.pkgJson;
+
+        pkgJson.name = pkgJsonSrc.name;
+        pkgJson.version = pkgJsonSrc.version;
+        pkgJson.main = pkgJsonSrc.main || '';
+        pkgJson.bin = pkgJsonSrc.bin || '';
+        pkgJson.description = pkgJsonSrc.description || '';
+        pkgJson.repository = pkgJsonSrc.repository || '';
+        pkgJson.scripts = pkgJsonSrc.scripts;
+        pkgJson.author = pkgJsonSrc.author || '';
+        pkgJson.dependencies = pkgJsonSrc.dependencies || {};
+        pkgJson.devDependencies = pkgJsonSrc.devDependencies || {};
+        pkgJson.peerDependencies = pkgJsonSrc.peerDependencies || {};
+        pkgJson.engines = pkgJsonSrc.engines || {};
+
+        let pkgJsonFile = path.join(folder, 'package.json');
+
+        if (status === 'update') {
+            pkgJson = _.merge({}, this.oldPkgJson, {
+                version: pkgJson.version,
+                dependencies: pkgJson.dependencies,
+                devDependencies: pkgJson.devDependencies,
+            });
+        }
+        else {
+            if (this.fs.existsSync(pkgJsonFile)) {
+                let pkgJsonContent = JSON.parse(this.fs.readFileSync(pkgJsonFile, 'utf-8') || '{}');
+                pkgJson = _.merge({}, pkgJsonContent, pkgJson);
+            }
+        }
+
+        this.fs.writeFileSync(path.join(folder, 'package.json'), JSON.stringify(pkgJson, null, 4), 'utf-8');
+    }
+
+    /**
+     * [create steamer-plugin-kit config]
+     * @param  {String} kit    [kit name]
+     * @param  {String} folder [target folder]
+     * @param  {Object} config [config object]
+     */
+    createPluginConfig(conf, folder) {
+        let config = conf;
+
+        if (!config.version) {
+            config.version = this.pkgJson.version;
+        }
+
+        this.createConfig(config, {
+            folder: folder,
+            overwrite: true,
+        });
+    }
+
+    /**
+     * [run npm install]
+     * @param  {String} folder [destination folder]
+     * @param  {String} folder [destination folder]
+     */
+    installPkg(folder, npmCmd) {
+        let npmCommand = npmCmd || 'npm';
+
+        this.info('we run ' + npmCommand + ' install for you');
+
+        process.chdir(path.resolve(folder));
+
+        let result = spawnSync(npmCommand, ['install'], { stdio: 'inherit', shell: true });
+
+        if (result.error) {
+            this.error('command ' + npmCommand + ' is not found or other error has occurred');
+        }
+    }
+
+    /**
+     * [update kit]
+     * @param  {Object} opts [options]
+     */
+    update(opts) {
+        let isUpdate = opts.isUpdate,
+            localConfig = this.readConfig(),
+            kit = localConfig.kit || null,
+            kitPath = null,
+            kitConfig = {},
+            folder = path.resolve();
+
+        // suuport update for starter kit without .steamer/steamer-plugin-kit.js
+        if (isUpdate && isUpdate !== true) {
+            localConfig = {};
+            localConfig.kit = this.getKitName(isUpdate);
+            kit = localConfig.kit;
+
+            kitConfig = this.getKitConfig(kit);
+            kitPath = this.getKitPath(this.globalNodeModules, kit);
+            this.pkgJson = this.getPkgJson(kitPath);
+
+            this.createPluginConfig({
+                kit: localConfig.kit,
+            }, folder);
+        }
+        else {
+            kitConfig = this.getKitConfig(kit);
+            kitPath = path.join(this.globalNodeModules, kit);
+            this.pkgJson = this.getPkgJson(kitPath);
+        }
+
+        let copyAndBackupFiles = this.copyAndBackup(kitConfig);
+
+        // check if config exist
+        this.checkConfigExist(localConfig);
+
+        // backup files
+        this.backupFiles(folder, copyAndBackupFiles.bkFiles);
+
+        // copy files excluding src
+        this.copyFilterFiles(kitPath, folder, copyAndBackupFiles.bkFiles);
+
+        // copy package.json
+        this.copyPkgJson(folder, 'update');
+
+        this.info(kit + ' update success');
+    }
+
+    getKitPath(globalNodeModules, kit) {
+        let kitPath = path.join(__dirname, '../../', kit);
+
+        if (!this.fs.existsSync(kitPath)) {
+            kitPath = path.join(globalNodeModules, kit);
+        }
+
+        // console.log(kitPath);
+        return kitPath;
+    }
+
+    /**
+     * [backup files while updating]
+     * @param  {String} folder  [target folder]
+     * @param  {Array} bkFiles [files needed backup]
+     */
+    backupFiles(folder, bkFiles) {
+        let destFolder = 'backup/' + Date.now();
+        bkFiles.forEach((item) => {
+            let file = path.join(folder, item);
+
+            if (this.fs.existsSync(file)) {
+                this.fs.copySync(file, path.join(folder, destFolder, item));
+
+                if (item === 'package.json') {
+                    this.oldPkgJson = require(file);
+                }
+
+                this.fs.removeSync(file);
+            }
+        });
+    }
+
+    /**
+     * [copy files while updating]
+     * @param  {String} kitPath [kit global module path]
+     * @param  {String} folder  [target folder]
+     * @param  {String} tpl     [config template]
+     * @param  {Array} bkFiles  [files needed backup]
+     */
+    copyFilterFiles(kitPath, folder, bkFiles) {
+        bkFiles.forEach((item) => {
+            let file = path.join(kitPath, item);
+
+            if (this.fs.existsSync(file)) {
+                this.fs.copySync(file, path.join(folder, item));
+            }
+        });
+    }
+
+    /**
+     * list avaialbe starter kits
+     * @param  {Object} opts [options]
+     */
+    list() {
+        let kits = this.listKit();
+
+        this.warn('steamer starterkit:');
+        kits.map((kit) => {
+            this.info(kit.name);
+        });
+    }
+
+    /**
+     * [search available starter kits]
+     * @return {Array}       [starter kits]
+     */
+    listKit() {
+        let globalNodeModules = this.globalNodeModules || '';
+        let pkgs = this.fs.readdirSync(globalNodeModules),
+            kits = [];
+
+        pkgs = pkgs.filter((item) => {
+            return (!!~item.indexOf('steamer-') && !~item.indexOf('steamer-plugin')) || item.indexOf('@') === 0;
+        });
+
+        let scopes = [];
+
+        pkgs.forEach((item, key) => {
+            if (item.indexOf('@') === 0) {
+                scopes.push(item);
+                pkgs.slice(key, 1);
+            }
+            else {
+                let pkgJson = require(path.join(globalNodeModules, item, 'package.json')),
+                    keywords = pkgJson.keywords || [],
+                    des = pkgJson.description || '';
+
+                // console.log(item, keywords);
+                if (~keywords.indexOf('steamer starterkit')) {
+                    kits.push({
+                        name: item + ': ' + des,
+                        value: item
+                    });
+                }
+            }
+        });
+
+
+        scopes.forEach((item1) => {
+            let pkgs = this.fs.readdirSync(path.join(globalNodeModules, item1));
+
+            pkgs.filter((item2) => {
+                return !!~item2.indexOf('steamer-') && !~item2.indexOf('steamer-plugin');
+            });
+
+            pkgs.forEach((item2) => {
+                let pkgJson = require(path.join(globalNodeModules, item1, item2, 'package.json')),
+                    keywords = pkgJson.keywords || [],
+                    des = pkgJson.description || '';
+
+                if (~keywords.indexOf('steamer starterkit')) {
+                    kits.push({
+                        name: item1 + '/' + item2 + ': ' + des,
+                        value: item1 + '/' + item2
+                    });
+                }
+            });
+
+        });
+
+        kits = kits.map((item) => {
+            item.name = item.name.replace('steamer-', '');
+            return item;
+        });
+
+        return kits;
+    }
+
+    /**
+     * create page based on templates
+     */
+    template() {
+
+        let localConfig = this.readConfig(),
+            kit = localConfig.kit || null,
+            folder = path.resolve();
+
+        // if .steamer/steamer-plugin-kit.js not exist
+        // let kitConfigPath = path.join(process.cwd(), './.steamer/steamer-plugin-kit.js');
+
+        this.checkConfigExist(localConfig);
+
+        // if (!this.fs.existsSync(kitConfigPath)) {
+
+        let pkgJsonPath = path.join(process.cwd(), 'package.json');
+
+        if (this.fs.existsSync(pkgJsonPath)) {
+            this.pkgJson = require(path.join(process.cwd(), 'package.json')) || {};
+
+            this.createPluginConfig({
+                kit: this.pkgJson.name,
+            }, process.cwd());
+        }
+        // }
+
+        if (!localConfig.template || !localConfig.template.src || !localConfig.template.dist) {
+            inquirer.prompt([{
+                type: 'text',
+                name: 'src',
+                message: 'type the template source folder:',
+                default: './tools/template',
+            }, {
+                type: 'input',
+                name: 'dist',
+                message: 'type your template destination folder: ',
+                default: './src/page',
+            }, {
+                type: 'input',
+                name: 'npm',
+                message: 'type your npm command(npm|tnpm|cnpm etc): ',
+                default: 'npm',
+            }]).then((answers) => {
+
+                localConfig.template = {};
+                localConfig.template.src = answers.src;
+                localConfig.template.dist = answers.dist;
+                localConfig.template.npm = answers.npm;
+
+                this.createPluginConfig(localConfig, path.resolve());
+
+                this.listTemplate(localConfig);
+            }).catch((e) => {
+                this.error(e.statck);
+            });
+        }
+        else {
+            this.listTemplate(localConfig);
+        }
+    }
+
+    listTemplate(localConfig) {
+        let templateFolder = path.resolve(localConfig.template.src),
+            templateInfo = this.fs.readdirSync(templateFolder);
+
+        templateInfo = templateInfo.filter((item) => {
+            return this.fs.statSync(path.join(templateFolder, item)).isDirectory();
+        });
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'template',
+            message: 'which template do you like: ',
+            choices: templateInfo,
+        }, {
+            type: 'input',
+            name: 'path',
+            message: 'type in your page name: ',
+        }]).then((answers) => {
+
+            if (!answers.path) {
+                return this.error('Please type in your page name.');
+            }
+
+            let targetFolder = path.resolve(localConfig.template.dist, answers.path),
+                srcFolder = path.resolve(localConfig.template.src, answers.template);
+
+            if (this.fs.existsSync(targetFolder)) {
+                return this.error('Target folder already exist. Please change another page name.');
+            }
+
+            this.fs.copySync(srcFolder, targetFolder);
+
+            this.walkAndReplace(targetFolder, ['.js', '.html'], { title: answers.path });
+
+            this.installDependency(path.resolve(localConfig.template.src), answers.template, localConfig.template.npm);
+
+        }).catch((e) => {
+            this.error(e.statck);
+        });
+    }
+
+    walkAndReplace(folder, extensions = [], replaceObj = {}) {
+
+        let files = klawSync(folder, { nodir: true });
+
+        if (extensions.length) {
+            files = files.filter((item) => {
+                let ext = path.extname(item.path);
+                return extensions.includes(ext);
+            });
+        }
+
+        files.forEach((file) => {
+            let content = this.fs.readFileSync(file.path, 'utf-8');
+
+            Object.keys(replaceObj).forEach((key) => {
+                content = content.replace(new RegExp('<% ' + key + ' %>', 'ig'), function (match) {
+                    return replaceObj[key];
+                });
+            });
+
+            this.fs.writeFileSync(file.path, content, 'utf-8');
+        });
+    }
+
+    installDependency(templateFolder, templateName, npmCmd = 'npm') {
+        let dependencyJson = path.join(templateFolder, 'dependency.js');
+
+        if (!this.fs.existsSync(dependencyJson)) {
+            return;
+        }
+
+        let dependencies = require(dependencyJson) || {};
+        dependencies = dependencies[templateName] || {};
+
+        let cmd = '';
+
+        Object.keys(dependencies).forEach((item) => {
+            cmd += (item + '@' + dependencies[item] + ' ');
+        });
+
+        if (cmd) {
+            spawnSync(npmCmd, ['install', '--save-dev', cmd], { stdio: 'inherit', shell: true });
+        }
+    }
+
+    /**
+     * auto install
+     */
+    auto() {
+        let kits = this.listKit();
+
+        // if (!kits.length) {
+        // 	this.printIfKitEmpty();
+        // }
+
+        kits = this.addOfficialKits(kits);
+
+        if (kits[0].type !== 'separator') {
+            kits.unshift(new inquirer.Separator('Local installed Starter Kits:'));
+        }
+
+        inquirer.prompt([{
+            type: 'list',
+            name: 'kit',
+            message: 'which starterkit do you like: ',
+            choices: kits,
+            pageSize: 50,
+        }, {
+            type: 'input',
+            name: 'path',
+            message: 'type in your project name: ',
+        }]).then((answers) => {
+            let kit = answers.kit,
+                projectPath = answers.path;
+
+            if (kit) {
+                this.init({
+                    install: kit,
+                    path: projectPath,
+                });
+            }
+
+        }).catch((e) => {
+            this.error(e.stack);
+        });
+    }
+
+    addOfficialKits(kits) {
+
+        kits.push(new inquirer.Separator('Other official Starter Kits:'));
+
+        let officialKits = [
+            {
+                name: 'simple: alloyteam frameworkless starterkit',
+                value: 'steamer-simple'
+            },
+            {
+                name: 'react: alloyteam react starterkit',
+                value: 'steamer-react',
+            },
+            {
+                name: 'vue: alloyteam vue starterkit',
+                value: 'steamer-vue',
+            },
+            {
+                name: 'simple-component: alloyteam frameworkless component development starterkit',
+                value: 'steamer-simple-component',
+            },
+            {
+                name: 'react-component: alloyteam react component development starterkit',
+                value: 'steamer-react-component',
+            },
+            {
+                name: 'vue-component: alloyteam vue component development starterkit',
+                value: 'steamer-vue-component',
+            },
+        ];
+
+        kits = _.uniqBy(kits.concat(officialKits), 'value');
+
+        return kits;
+    }
+
+    printIfKitEmpty() {
+        this.warn('No starter kits are found. There may be two reasons:');
+        this.warn('1. You have not set Node_PATH.');
+        this.warn('2. You do not install any starter kits.');
+    }
+
+    /**
+     * [help]
+     */
+    help() {
+        this.printUsage('steamer kit manager', 'kit');
+        this.printOption([
+            {
+                option: 'list',
+                alias: 'l',
+                description: 'list all available starter kits'
+            },
+            {
+                option: 'install',
+                alias: 'i',
+                value: '<starter kit> [--path|-p] <project path>',
+                description: 'install starter kit'
+            },
+            {
+                option: 'update',
+                alias: 'u',
+                value: '[<starter kit>]',
+                description: 'update starter kit for project'
+            }
+        ]);
+    }
+
+    checkFolderExist(folder) {
+        if (this.fs.existsSync(folder)) {
+            throw new Error(folder + ' has existed.');  // avoid duplicate folder
+        }
+    }
+
+    checkConfigExist(localConfig) {
+        if (!localConfig || !localConfig.kit) {
+            this.printIfConfigNotFound();
+            throw new Error('./steamer/steamer-plugin-kit.js not found or empty.');
+        }
+    }
+
+    printIfConfigNotFound() {
+        this.error('The config file ./steamer/steamer-plugin-kit.js is required');
+        this.error('There may be 2 reasons:');
+        this.error('1. You are not in the right folder after installation.');
+        this.error('2. You really do not have .steamer folder in the project.\n\n');
+    }
 }
-
-KitPlugin.prototype.init = function(argv) {
-
-	var localConfig = null;
-
-	var argv = argv || this.argv;
-	let kit = null,
-		kitPath = null,	  
-		kitConfig = {},
-		folder = null,
-		globalNodeModules = this.utils.globalNodeModules || "";
-
-	let isInstall = argv.install || argv.i || false,
-		isUpdate = argv.update || argv.u || false,
-		isList = argv.list || argv.l || false,
-		isTemplate = argv.template || argv.t || false;
-
-	if (isInstall && isInstall !== true) {
-		isInstall = this.getKitName(isInstall);
-		kit = isInstall;  // kit name, for example, steamer-react
-		kitPath = path.join(globalNodeModules, kit);  // steamer-react global module
-		folder = argv.path || argv.p || this.getFolderName(kit);	// target folder
-
-		if (fs.existsSync(folder)) {
-			throw new Error(folder + " has existed.");  // avoid duplicate folder
-		}
-
-		kitConfig = this.getKitConfig(kit);
-
-		this.getPkgJson(kitPath);
-	}
-	else if (isUpdate) {
-		localConfig = this.readLocalConfig();
-		kit = localConfig.kit || null;
-		folder = path.resolve();
-
-		// suuport update for starter kit without .steamer/steamer-plugin-kit.js
-		if (isUpdate && isUpdate !== true) {
-			localConfig = {};
-			localConfig.kit = this.getKitName(isUpdate);
-			kit = localConfig.kit;
-
-			kitConfig = this.getKitConfig(kit);
-			kitPath = this.getKitPath(globalNodeModules, kit);
-			this.getPkgJson(kitPath);
-			
-			this.createLocalConfig({
-				kit: localConfig.kit,
-			}, path.resolve());
-		}
-		else {
-
-			kitConfig = this.getKitConfig(kit);
-
-			kitPath = path.join(globalNodeModules, kit);
-			this.getPkgJson(kitPath);
-		}
-
-		if (!localConfig || !localConfig.kit) {
-			this.printIfConfigNotFound();
-			throw new Error(".steamer not found.");
-		}
-
-	}
-	else if (isTemplate) {
-		localConfig = this.readLocalConfig();
-		kit = localConfig.kit || null;
-		folder = path.resolve();
-		
-		// if .steamer/steamer-plugin-kit.js not exist
-		let kitConfigPath = path.join(process.cwd(), "./.steamer/steamer-plugin-kit.js");
-
-		if (!fs.existsSync(kitConfigPath)) {
-
-			let pkgJsonPath = path.join(process.cwd(), "package.json");
-
-			if (fs.existsSync(pkgJsonPath)) {
-				this.pkgJson = require(path.join(process.cwd(), "package.json")) || {};
-
-				this.createLocalConfig({
-					kit: this.pkgJson.name,
-				}, process.cwd());
-			}
-			else {
-				this.printIfConfigNotFound();
-				throw new Error(".steamer not found.");
-			}
-		}
-	}
-	
-	let cpyFiles = this.filterCopyFiles(kitConfig.files); // files needed to be copied
-
-	let bkFiles = _.merge([], kitConfig.files, ["package.json"]); // backup files
-
-	/**
-	 * // .steamer/steamer.plugin-kit.js
-	   module.exports = {
-		    "plugin": "steamer-plugin-kit",
-		    "config": {
-		        "kit": "steamer-react"
-		    }
-		}
-	*/
-
-	let opts = {
-		kit,
-		kitPath,
-		folder,
-		localConfig,
-		kitConfig,
-		bkFiles,
-		cpyFiles,
-		globalNodeModules,
-	};
-
-	if (isUpdate) {
-		this.update(opts);
-	}
-	else if (isInstall) {
-		this.install(opts);
-	}
-	else if (isList) {
-		this.list(opts);
-	}
-	else if (isTemplate) {
-		this.template(opts);
-	}
-	else {
-		this.auto(opts);
-	}
-};
-
-KitPlugin.prototype.printIfConfigNotFound = function() {
-	this.utils.error("The config file ./steamer/steamer-plugin-kit.js is required");
-	this.utils.error("There may be 2 reasons:");
-	this.utils.error("1. You are not in the right folder after installation.");
-	this.utils.error("2. You really do not have .steamer folder in the project.\n\n");
-};
-
-/**
- * create page based on templates
- */
-KitPlugin.prototype.template = function(opts) {
-	let localConfig = opts.localConfig || {};
-
-	if (!localConfig.template || !localConfig.template.src || !localConfig.template.dist) {
-		inquirer.prompt([{
-			type: 'text',
-			name: 'src',
-			message: 'type the template source folder:',
-			default: './tools/template',
-		},{
-			type: 'input',
-			name: 'dist',
-			message: 'type your template destination folder: ',
-			default: './src/page',
-		},{
-			type: 'input',
-			name: 'npm',
-			message: 'type your npm command(npm|tnpm|cnpm etc): ',
-			default: 'npm',
-		}]).then((answers) => {
-
-			localConfig.template = {};
-			localConfig.template.src = answers.src;
-			localConfig.template.dist = answers.dist;
-			localConfig.template.npm = answers.npm;
-
-			this.createLocalConfig(localConfig, path.resolve());
-
-			this.listTemplate(localConfig);
-		}).catch((e) => {
-			this.utils.error(e.statck);
-		});
-	}
-	else {
-		this.listTemplate(localConfig);
-	}
-};
-
-KitPlugin.prototype.getKitPath = function(globalNodeModules, kit) {
-	let kitPath = path.join(__dirname, '../../', kit);
-
-	if (!fs.existsSync(kitPath)) {
-		kitPath = path.join(globalNodeModules, kit);
-	}
-
-	console.log(kitPath);
-	return kitPath;
-};
-
-KitPlugin.prototype.listTemplate = function(localConfig) {
-	let templateFolder = path.resolve(localConfig.template.src),
-		templateInfo = fs.readdirSync(templateFolder);
-
-	templateInfo = templateInfo.filter((item) => {
-		return fs.statSync(path.join(templateFolder, item)).isDirectory();
-	});
-
-	inquirer.prompt([{
-		type: 'list',
-		name: 'template',
-		message: 'which template do you like: ',
-		choices: templateInfo,
-	},{
-		type: 'input',
-		name: 'path',
-		message: 'type in your page name: ',
-	}]).then((answers) => {
-
-		if (!answers.path) {
-			return this.utils.error("Please type in your page name.");
-		}
-
-		let targetFolder = path.resolve(localConfig.template.dist, answers.path),
-			srcFolder = path.resolve(localConfig.template.src, answers.template);
-
-		if (fs.existsSync(targetFolder)) {
-			return this.utils.error("Target folder already exist. Please change another page name.");
-		}
-
-		fs.copySync(srcFolder, targetFolder);
-
-		this.walkAndReplace(targetFolder, [".js", ".html"], {title: answers.path});
-
-		this.installDependency(path.resolve(localConfig.template.src), answers.template, localConfig.template.npm);
-
-	}).catch((e) => {
-		this.utils.error(e.statck);
-	});
-};
-
-KitPlugin.prototype.walkAndReplace = function(folder, extensions, replaceObj) {
-
-	var extensions = extensions || [],
-		replaceObj = replaceObj || {};
-
-	var files = klawSync(folder, {nodir: true});
-
-	if (extensions.length) {
-		files = files.filter((item) => {
-			let ext = path.extname(item.path);
-			return extensions.includes(ext);
-		});
-	}
-
-	files.forEach((file) => {
-		let content = fs.readFileSync(file.path, "utf-8");
-
-		Object.keys(replaceObj).forEach((key) => {
-			content = content.replace(new RegExp("<% " + key + " %>", "ig"), function(match) {
-				return replaceObj[key];
-			});
-		});
-
-		fs.writeFileSync(file.path, content, "utf-8");
-	});
-};
-
-KitPlugin.prototype.installDependency = function(templateFolder, templateName, npm) {
-	let dependencyJson = path.join(templateFolder, "dependency.js"),
-		npmCmd = npm || 'npm';
-
-	if (!fs.existsSync(dependencyJson)) {
-		return;
-	}
-
-	let dependencies = require(dependencyJson) || {};
-	dependencies = dependencies[templateName] || {};
-
-	let cmd = "";
-
-	Object.keys(dependencies).forEach((item) => {
-		cmd += (item + '@' + dependencies[item] + ' ');
-	});
-
-	if (cmd) {
-		spawnSync(npmCmd, ['install', "--save-dev", cmd], { stdio: 'inherit', shell: true });
-	}
-};
-
-/**
- * auto install
- */
-KitPlugin.prototype.auto = function(opts) {
-	let kits = this.listKit(opts);
-
-	// if (!kits.length) {
-	// 	this.printIfKitEmpty();
-	// }
-
-	kits = this.addOfficialKits(kits);
-
-	if (kits[0].type !== 'separator') {
-		kits.unshift(new inquirer.Separator("Local installed Starter Kits:"));
-	}
-
-	inquirer.prompt([{
-		type: 'list',
-		name: 'kit',
-		message: 'which starterkit do you like: ',
-		choices: kits,
-		pageSize: 50,
-	},{
-		type: 'input',
-		name: 'path',
-		message: 'type in your project name: ',
-	}]).then((answers) => {
-		let kit = answers.kit,
-			projectPath = answers.path;
-
-		if (kit) {
-			this.init({
-				install: kit,
-				path: projectPath,
-			});
-		}
-
-	}).catch((e) => {
-		this.utils.error(e.stack);
-	});
-};
-
-KitPlugin.prototype.addOfficialKits = function(kits) {
-
-	kits.push(new inquirer.Separator("Other official Starter Kits:"));
-
-	var officialKits = [
-		{ 
-			name: 'simple: alloyteam frameworkless starterkit',
-    		value: 'steamer-simple' 
-    	},
-    	{
-    		name: 'react: alloyteam react starterkit',
-    		value: 'steamer-react',
-    	},
-    	{
-    		name: 'vue: alloyteam vue starterkit',
-    		value: 'steamer-vue',
-    	},
-    	{
-    		name: 'simple-component: alloyteam frameworkless component development starterkit',
-    		value: 'steamer-simple-component',
-    	},
-    	{
-    		name: 'react-component: alloyteam react component development starterkit',
-    		value: 'steamer-react-component',
-    	},
-    	{
-    		name: 'vue-component: alloyteam vue component development starterkit',
-    		value: 'steamer-vue-component',
-    	},
-	];
-
-	kits = _.uniqBy(kits.concat(officialKits), 'value');
-
-	// console.log(kits);
-
-	return kits;
-};
-
-KitPlugin.prototype.printIfKitEmpty = function() {
-	this.utils.warn("No starter kits are found. There may be two reasons:");
-	this.utils.warn("1. You have not set Node_PATH.");
-	this.utils.warn("2. You do not install any starter kits.");
-};
-
-/**
- * list avaialbe starter kits
- * @param  {Object} opts [options]
- */
-KitPlugin.prototype.list = function(opts) {
-	let kits = this.listKit(opts);
-
-	this.utils.warn("steamer starterkit:");
-	kits.map((kit) => {
-		this.utils.info(kit.name);
-	});
-};
-
-/**
- * [search available starter kits]
- * @param  {Object} opts [options]
- * @return {Array}       [starter kits]
- */
-KitPlugin.prototype.listKit = function(opts) {
-	let globalNodeModules = opts.globalNodeModules || "";
-	let pkgs = fs.readdirSync(globalNodeModules),
-		kits = [];
-
-	pkgs = pkgs.filter((item) => {
-		return (!!~item.indexOf("steamer-") && !~item.indexOf("steamer-plugin")) || item.indexOf("@") === 0;
-	});
-
-	let scopes = [];
-
-	pkgs.forEach((item, key) => {
-		if (item.indexOf("@") === 0) {
-			scopes.push(item);
-			pkgs.slice(key, 1);
-		}
-		else {
-			let pkgJson = require(path.join(globalNodeModules, item, "package.json")),
-				keywords = pkgJson.keywords || [],
-				des = pkgJson.description || '';
-
-			// console.log(item, keywords);
-			if (!!~keywords.indexOf("steamer starterkit")) {
-				kits.push({
-					name: item + ': ' + des,
-					value: item
-				});
-			}
-		}
-	});
-
-	
-	scopes.forEach((item1) => {
-		let pkgs = fs.readdirSync(path.join(globalNodeModules, item1));
-
-		pkgs.filter((item2) => {
-			return !!~item2.indexOf("steamer-") && !~item2.indexOf("steamer-plugin");
-		});
-
-		pkgs.forEach((item2) => {
-			let pkgJson = require(path.join(globalNodeModules, item1, item2, "package.json")),
-				keywords = pkgJson.keywords || [],
-				des = pkgJson.description || '';
-
-			if (!!~keywords.indexOf("steamer starterkit")) {
-				kits.push({
-					name: item1 + "/" + item2 + ': ' + des,
-					value: item1 + "/" + item2
-				});
-			}
-		});
-
-	});
-
-	kits = kits.map((item) => {
-		item.name = item.name.replace("steamer-", "");
-		return item;
-	});
-
-	return kits;
-};
-
-KitPlugin.prototype.getKitConfig = function(kit) {
-	let kitConfig = {},
-		kitPath;
-
-	try {
-		kitPath = path.join(this.utils.globalNodeModules, kit);
-
-		if (fs.existsSync(kitPath)) {
-			kitConfig = require(kitPath);
-		}
-		else {
-			kitConfig = require(kit);
-		}
-	}
-	catch(e) {
-		
-		if (e.code === 'MODULE_NOT_FOUND') {
-			this.utils.info(kit + ' is not found. Start installing...');
-		}
-		
-		spawnSync("npm", ['install', "--global", kit], { stdio: 'inherit', shell: true });
-
-		try {
-			kitConfig = require(kitPath);
-		}
-		catch(e) {
-			if (e.code === 'MODULE_NOT_FOUND') {
-				this.utils.error(kit + " is not installed. One of following three reasons may cause this issue: ");
-				this.utils.warn("1. You do not install this starterkit.");
-				this.utils.warn("2. The starterkit is not in global node_modules.");
-				this.utils.warn("3. You install the starterkit but forget to set NODE_PATH which points to global node_modules.");
-				throw new Error(kit + " is not installed. ");
-			}
-		}
-	}
-
-	return kitConfig;
-};
-
-
-/**
- * [get kit name]
- * @param  {String} pkg [starter kit name]
- * @return {String}     [kit name]
- */
-KitPlugin.prototype.getKitName = function(pkg) {
-	let pkgArr = pkg.split('/');
-
-	if (pkgArr.length === 2) {
-		pkgArr[1] = (!!~pkgArr[1].indexOf(this.prefix)) ? pkgArr[1] : this.prefix + pkgArr[1];
-	}
-	else if (pkgArr.length === 1) {
-		pkgArr[0] = (!!~pkgArr[0].indexOf(this.prefix)) ? pkgArr[0] : this.prefix + pkgArr[0];
-	}
-	
-	pkg = pkgArr.join('/');
-
-	return pkg;
-};
-
-KitPlugin.prototype.getFolderName = function(kit) {
-	let pkgArr = kit.split('/');
-
-	if (pkgArr.length === 2) {
-		return pkgArr[1];
-	}
-	else if (pkgArr.length === 1) {
-		return pkgArr[0];
-	}
-
-};
-
-/**
- * [copy files]
- * @param  {String} kitPath [kit global module path]
- * @param  {String} folder  [target folder]
- * @param  {String} tpl     [config template]
- */
-KitPlugin.prototype.copyFiles = function(kitPath, cpyFiles, folder, config) {
-
-	cpyFiles.map((item) => {
-		try {
-			let srcFile = path.join(kitPath, item),
-				destFile = path.join(folder, item);
-			
-			if (fs.existsSync(srcFile)) {
-				fs.copySync(srcFile, destFile);
-			}
-		}
-		catch(e) {
-			this.utils.error(e.stack);
-		}
-	});
-	
-	fs.ensureFileSync(path.join(folder, "config/steamer.config.js"));
-	fs.writeFileSync(path.join(folder, "config/steamer.config.js"), "module.exports = " + JSON.stringify(config, null, 4));
-};
-
-/**
- * [get info from package.json]
- * @param  {String} kitPath [starter kit global path]
- */
-KitPlugin.prototype.getPkgJson = function(kitPath) {
-
-	let pkgJsonFile = path.resolve(kitPath, "package.json");
-	
-	this.pkgJson = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8"));
-
-};
-
-/**
- * [create package.json]
- * @param  {String} kitPath [starter kit global path]
- * @param  {String} folder [new package.json destination folder]
- */
-KitPlugin.prototype.copyPkgJson = function(folder, status) {
-	let pkgJson = {
-	  	"name": "",
-	  	"version": "",
-	  	"description": "",
-	  	"scripts": {
-	    
-	  	},
-	  	"author": "",
-	};
-	
-	let pkgJsonSrc = this.pkgJson;
-
-	pkgJson.name = pkgJsonSrc.name;
-	pkgJson.version = pkgJsonSrc.version;
-	pkgJson.main = pkgJsonSrc.main || '',
-	pkgJson.bin = pkgJsonSrc.bin || '';
-	pkgJson.description = pkgJsonSrc.description || '';
-	pkgJson.repository = pkgJsonSrc.repository || '';
-	pkgJson.scripts = pkgJsonSrc.scripts;
-	pkgJson.author = pkgJsonSrc.author || '';
-	pkgJson.dependencies = pkgJsonSrc.dependencies || {};
-	pkgJson.devDependencies = pkgJsonSrc.devDependencies || {};
-	pkgJson.peerDependencies = pkgJsonSrc.peerDependencies || {};
-	pkgJson.engines = pkgJsonSrc.engines || {};
-
-	let pkgJsonFile = path.join(folder, "package.json");
-
-	if (status === 'update') {
-		pkgJson = _.merge({}, this.oldPkgJson, {
-			version: pkgJson.version,
-			dependencies: pkgJson.dependencies,
-			devDependencies: pkgJson.devDependencies,
-		});
-	}
-	else {
-		if (fs.existsSync(pkgJsonFile)) {
-			let pkgJsonContent = JSON.parse(fs.readFileSync(pkgJsonFile, "utf-8") || "{}");
-			pkgJson = _.merge({}, pkgJsonContent, pkgJson);
-		}
-	}
-
-	fs.writeFileSync(path.join(folder, "package.json"), JSON.stringify(pkgJson, null, 4), "utf-8");
-};
-
-KitPlugin.prototype.filterCopyFiles = function(files) {
-
-	var f = [];
-
-	f = f.concat(files);
-
-	f.push("src", "tools", "config", "README.md");
-
-	f = _.uniq(f);
-
-	return f;
-};
-
-
-/**
- * [backup files while updating]
- * @param  {String} folder  [target folder]
- * @param  {Array} bkFiles [files needed backup]
- */
-KitPlugin.prototype.backupFiles = function(folder, bkFiles) {
-	let destFolder = "backup/" + Date.now();
-	bkFiles.forEach((item) => {
-		let file = path.join(folder, item);
-
-		if (fs.existsSync(file)) {
-			fs.copySync(file, path.join(folder, destFolder, item));
-
-			if (item === "package.json") {
-				this.oldPkgJson = require(file);
-			}
-
-			fs.removeSync(file);
-		}
-	});
-};
-
-/**
- * [copy files while updating]
- * @param  {String} kitPath [kit global module path]
- * @param  {String} folder  [target folder]
- * @param  {String} tpl     [config template]
- * @param  {Array} bkFiles  [files needed backup]
- */
-KitPlugin.prototype.copyFilterFiles = function(kitPath, folder, bkFiles) {
-	
-	bkFiles.forEach((item) => {
-		let file = path.join(kitPath, item);
-
-		if (fs.existsSync(file)) {
-			fs.copySync(file, path.join(folder, item));
-		}
-	});
-
-};
-
-/**
- * [create local config]
- * @param  {String} kit    [kit name]
- * @param  {String} folder [target folder]
- * @param  {Object} config [config object]
- */
-KitPlugin.prototype.createLocalConfig = function(conf, folder) {
-
-	let config = conf;
-
-	if (!config.version) {
-		config.version = this.pkgJson.version;
-	}
-
-	this.utils.createConfig(config, {
-		folder: folder,
-		overwrite: true,
-	});
-};
-
-/**
- * [read local config, usually needed when update starter kit]
- * @param  {String} folder     [target folder]
- * @param  {String} configFile [local config file]
- * @return {Boolean / Object}            [config value]
- */
-KitPlugin.prototype.readLocalConfig = function() {
-	let isJs = true;
-
-	return this.utils.readConfig("", isJs);
-};
-
-/**
- * [install kit]
- * @param  {Object} opts [options]
- */
-KitPlugin.prototype.install = function(opts) {
-
-	let kit = opts.kit,
-		kitPath = opts.kitPath,
-		folder = opts.folder,
-		cpyFiles = opts.cpyFiles,
-		kitConfig = opts.kitConfig,
-		inquirerConfig = kitConfig.options;
-
-	let config = null;
-
-	inquirerConfig.push({
-        type: 'input',
-        name: 'npm',
-        message: 'npm install command(npm, cnpm, yarn, tnpm, etc)',
-        default: 'npm'
-    });
-
-	inquirer.prompt(
-		inquirerConfig
-	).then((answers) => {
-		var npm = answers.npm;
-		delete answers['npm'];
-
-		// console.log(answers);
-		
-		// init config
-		answers.webserver = answers.webserver || "//localhost:9000/";
-		answers.cdn = answers.cdn || "//localhost:8000/";
-		answers.port = answers.port || 9000; 
-		answers.route = answers.route || "/";
-
-		config = _.merge({}, answers);
-
-		// copy template files
-		this.copyFiles(kitPath, cpyFiles, folder, config);
-
-		this.copyPkgJson(folder, 'install');
-
-		// create config file, for example in ./.steamer/steamer-plugin-kit.js
-		this.createLocalConfig({
-			kit: kit, 
-		}, folder);
-
-		this.utils.info(kit + " install success");
-		this.utils.info("The project path is: " + path.resolve(folder));
-
-		this.installPkg(folder, npm);
-
-	}).catch((e) => {
-		this.utils.error(e.stack);
-	});
-};
-
-/**
- * [run npm install]
- * @param  {String} folder [destination folder]
- * @param  {String} folder [destination folder]
- */
-KitPlugin.prototype.installPkg = function(folder, npmCmd) {
-	var npmCmd = npmCmd || "npm";
-
-	this.utils.info("we run " + npmCmd + " install for you");
-	
-	process.chdir(path.resolve(folder));
-
-	let result = spawnSync(npmCmd, ['install'], { stdio: 'inherit', shell: true });
-
-	if (result.error) {
-		this.utils.error('command ' + npmCmd + ' is not found or other error has occurred');
-	}
-};
-
-/**
- * [update kit]
- * @param  {Object} opts [options]
- */
-KitPlugin.prototype.update = function(opts) {
-	let kit = opts.kit,
-		kitPath = opts.kitPath,
-		folder = opts.folder,
-		bkFiles = opts.bkFiles;
-
-	this.backupFiles(folder, bkFiles);	
-
-	// copy files excluding src
-	this.copyFilterFiles(kitPath, folder, bkFiles);
-
-	this.copyPkgJson(folder, 'update');
-
-	this.utils.info(kit + " update success");
-};
-
-/**
- * [help]
- */
-KitPlugin.prototype.help = function() {
-	this.utils.printUsage('steamer kit manager', 'kit');
-	this.utils.printOption([
-		{
-			option: "list",
-			alias: "l",
-			description: "list all available starter kits"
-		},
-		{
-			option: "install",
-			alias: "i",
-			value: "<starter kit> [--path|-p] <project path>",
-			description: "install starter kit"
-		},
-		{
-			option: "update",
-			alias: "u",
-			value: "[<starter kit>]",
-			description: "update starter kit for project"
-		}
-	]);
-};
 
 module.exports = KitPlugin;

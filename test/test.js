@@ -69,7 +69,7 @@ describe("install", function() {
 			list: true,
 		});
 
-		var infoStub = sinon.stub(kit.utils, "info");
+		var infoStub = sinon.stub(kit, "info");
 
 		kit.init();
 
