@@ -1,3 +1,6 @@
+## 2.0.1
+	- 更新steamer-plugin依赖
+
 ## 2.0.0
 	- 更新steamer-plugin内核及引用机制
 	- 优化提示
