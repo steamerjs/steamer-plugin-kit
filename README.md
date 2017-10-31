@@ -56,10 +56,10 @@ steamer kit
 
 ? which starterkit do you like:  (Use arrow keys)
 
-  Local installed Starter Kits:
+  * Local installed Starter Kits:
 ❯ simple: alloyteam frameworkless starterkit
 
-  Other official Starter Kits:
+  * Other official Starter Kits:
   react: alloyteam react starterkit
   vue: alloyteam vue starterkit
   simple-component: alloyteam frameworkless component development starterkit
