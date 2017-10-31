@@ -1,3 +1,7 @@
+## 2.0.2
+	- 更新README
+	- 优化 steamer kit 提示
+
 ## 2.0.1
 	- 更新steamer-plugin依赖
 
