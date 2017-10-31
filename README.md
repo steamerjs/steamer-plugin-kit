@@ -7,13 +7,24 @@ starter kit 管理命令
 [![Deps](https://david-dm.org/steamerjs/steamer-plugin-kit.svg)](https://david-dm.org/steamerjs/steamer-plugin-kit)
 [![Coverage](https://img.shields.io/coveralls/steamerjs/steamer-plugin-kit.svg)](https://coveralls.io/github/steamerjs/steamer-plugin-kit)
 
+## 内置
+`steamer-plugin-kit` 已经默认作为 `steamerjs` 的内置插件，全局安装 `steamerjs` 后即可使用。如果你额外安装 `steamer-plugin-kit`，则会优先使用这个额外安装的包。
+
 
 ## 安装
 ```javascript
+// 必须
 npm i -g steamerjs
 
+// v2.0 后可选
 npm i -g steamer-plugin-kit
 ```
+
+## 设置 `NODE_PATH`
+
+由于 `steamerjs` 的命令或脚手架都需要全局安装，尽管steamerjs会尝试兼容，但在某些使用场景下会仍然找到不全局安装的位置，因此推荐设置环境变量 `NODE_PATH`。
+
+[常见问题 - NODE_PATH设置](https://steamerjs.github.io/docs/introduction/Steamer-QA.html)
 
 ## 更新
 ```
