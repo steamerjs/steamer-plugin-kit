@@ -113,6 +113,29 @@ describe("install", function() {
 
 	});
 
+	it("install using api", function() {
+		// this.timeout(10000);
+
+		var kit = new plugin({});
+
+		let projectPath = kit.install({
+			isInstall: 'example1',
+			argvs: {
+				p: 'steamer-example6',
+				webserver: '//localhost:9001/',
+				cdn: '//localhost:8001/',
+				port: 9001,
+			} 
+		});
+
+		expect(projectPath).to.be(path.resolve('steamer-example6'));
+		expect(require(path.resolve('steamer-example6/config/steamer.config.js'))).to.eql({
+			"webserver": "//localhost:9001/",
+			"cdn": "//localhost:9001/",
+			"port": 9001
+		});
+	});
+
 	it("starter kit install normal kit", function(done) {
 		this.timeout(10000);
 
