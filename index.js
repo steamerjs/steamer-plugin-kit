@@ -92,7 +92,7 @@ class KitPlugin extends SteamerPlugin {
         if (argvs.hasOwnProperty('webserver') && argvs.hasOwnProperty('cdn')) {
             config = _.merge({}, {
                 webserver: argvs.webserver || '//localhost:9000/',
-                cdn: argvs.webserver || '//localhost:8000/',
+                cdn: argvs.cdn || '//localhost:8000/',
                 port: argvs.port || 9000,
             });
 

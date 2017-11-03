@@ -131,7 +131,7 @@ describe("install", function() {
 		expect(projectPath).to.be(path.resolve('steamer-example6'));
 		expect(require(path.resolve('steamer-example6/config/steamer.config.js'))).to.eql({
 			"webserver": "//localhost:9001/",
-			"cdn": "//localhost:9001/",
+			"cdn": "//localhost:8001/",
 			"port": 9001
 		});
 	});
