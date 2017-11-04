@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",

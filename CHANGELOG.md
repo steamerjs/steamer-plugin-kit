@@ -1,3 +1,6 @@
+## 2.0.5
+	- 解决使用模板时重复生成 steamer-plugin-kit的问题
+
 ## 2.0.4
 	- fix api bug
 
