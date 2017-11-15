@@ -91,9 +91,9 @@ class KitPlugin extends SteamerPlugin {
         // as a function api
         if (argvs.hasOwnProperty('webserver') && argvs.hasOwnProperty('cdn')) {
             config = _.merge({}, {
-                webserver: argvs.webserver || '//localhost:9000/',
-                cdn: argvs.cdn || '//localhost:8000/',
-                port: argvs.port || 9000,
+                webserver: (argvs.webserver || '//localhost:9000/').trim(),
+                cdn: (argvs.cdn || '//localhost:8000/').trim(),
+                port: (`${argvs.port}` || '9000').trim(),
             });
 
             // copy template files
@@ -124,9 +124,9 @@ class KitPlugin extends SteamerPlugin {
             delete answers['npm'];
 
             // init config
-            answers.webserver = answers.webserver || '//localhost:9000/';
-            answers.cdn = answers.cdn || '//localhost:8000/';
-            answers.port = answers.port || 9000;
+            answers.webserver = (answers.webserver || '//localhost:9000/').trim();
+            answers.cdn = (answers.cdn || '//localhost:8000/').trim();
+            answers.port = (`${answers.port}` || 9000).trim;
 
             config = _.merge({}, answers);
 

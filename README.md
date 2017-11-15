@@ -10,8 +10,9 @@ starter kit 管理命令
 ## 内置
 `steamer-plugin-kit` 已经默认作为 `steamerjs` 的内置插件，全局安装 `steamerjs` 后即可使用。如果你额外安装 `steamer-plugin-kit`，则会优先使用这个额外安装的包。
 
-
 ## 安装
+以下命令全局安装 `steamerjs` 或 `steamer-plugin-kit`，使用时如遇到问题，可先参见文档[[常见问题]](https://steamerjs.github.io/docs/introduction/Steamer-QA.html)，可能是没设置好 `NODE_PATH`
+
 ```javascript
 // 必须
 npm i -g steamerjs
