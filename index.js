@@ -93,7 +93,7 @@ class KitPlugin extends SteamerPlugin {
             config = _.merge({}, {
                 webserver: (argvs.webserver || '//localhost:9000/').trim(),
                 cdn: (argvs.cdn || '//localhost:8000/').trim(),
-                port: (`${argvs.port}` || '9000').trim(),
+                port: argvs.port || 9000,
             });
 
             // copy template files
@@ -126,7 +126,7 @@ class KitPlugin extends SteamerPlugin {
             // init config
             answers.webserver = (answers.webserver || '//localhost:9000/').trim();
             answers.cdn = (answers.cdn || '//localhost:8000/').trim();
-            answers.port = (`${answers.port}` || 9000).trim;
+            answers.port = answers.port || 9000;
 
             config = _.merge({}, answers);
 
