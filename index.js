@@ -390,6 +390,9 @@ class KitPlugin extends SteamerPlugin {
             }, folder);
         }
         else {
+            if (kit === null) {
+                return this.error(`Kit name is null. Please check your .steamer/steamer-plugin-kit.js or specify the kit name directly, for example, steamer kit -u vue`);
+            }
             kitConfig = this.getKitConfig(kit);
             kitPath = path.join(this.globalNodeModules, kit);
             this.pkgJson = this.getPkgJson(kitPath);
