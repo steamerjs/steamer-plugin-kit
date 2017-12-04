@@ -4,6 +4,7 @@ const SteamerPlugin = require('steamer-plugin'),
     path = require('path'),
     url = require('url'),
     ora = require('ora'),
+    Rx = require('rx'),
     inquirer = require('inquirer'),
     _ = require('lodash'),
     git = require('simple-git'),
@@ -33,6 +34,7 @@ class KitPlugin extends SteamerPlugin {
         this.kitOptionsPath = path.join(this.kitHomePath, 'starterkits.js');
         this.spinner = ora('Loading unicorns');
         this.kitOptions = this.getKitOptions();
+        this.ignoreFiles = ['.git', '.svn'];
 
         this.pkgJson = {};
         // 旧的项目pkgjson内容，在脚手架更新的时候有用。
@@ -65,7 +67,7 @@ class KitPlugin extends SteamerPlugin {
             this.list();
         }
         else {
-            this.list()
+            this.install()
         }
     }
 
@@ -91,8 +93,9 @@ class KitPlugin extends SteamerPlugin {
         };
 
         // starterkit exist and not add another version
-        if (!this.kitOptions.list.hasOwnProperty(kitName) && !tag) {
+        if (this.kitOptions.list.hasOwnProperty(kitName) && !tag) {
             this.error(`${kitName} exists. Please change the name useing --alias.`);
+            return Promise.resolve();
         }
         else {
             if (!this.kitOptions.list.hasOwnProperty(kitName)) {
@@ -117,7 +120,6 @@ class KitPlugin extends SteamerPlugin {
             kitName,
             localPath,
         } = options;
-
         return new Promise((resolve, reject) => {
             git()
                 .silent(true)
@@ -394,18 +396,204 @@ class KitPlugin extends SteamerPlugin {
     }
 
     list() {
+        this.log('You can use following starterkits: ');
         let kits = this.kitOptions.list;
         Object.keys(kits).forEach((key) => {
             let kit = kits[key];
-            this.warn(this.chalk.bold(`* ${key}@${kit.currentVersion}`));
+            this.success(this.chalk.bold(`* ${key}`));
+            this.log(`    - ver: ${kit.currentVersion}`);
             this.log(`    - des: ${kit.description}`);
             this.log(`    - url: ${kit.url}`);
         });
     }
 
-    install(kits) {
-        kits.forEach((item) => {
-            console.log(item);
+    install() {
+        let kits = this.kitOptions.list,
+            questions = [],
+            choices = [];
+
+        Object.keys(kits).forEach((key) => {
+            choices.push({
+                name: `${key} - ${kits[key].description}`,
+                value: key
+            });
+        });
+
+        let answers = {};
+        let prompts = new Rx.Subject();
+        inquirer.prompt(prompts).ui.process.subscribe(
+            (obj) => {
+                switch (obj.name) {
+                    case 'kit': {
+                        prompts.onNext({
+                            type: 'list',
+                            name: 'ver',
+                            message: 'Which version do you need: ',
+                            choices: kits[obj.answer].versions
+                        });
+                        answers.kit = obj.answer;
+                        break;
+                    }
+                    case 'ver': {
+                        prompts.onNext({
+                            type: 'text',
+                            name: 'folder',
+                            default: './',
+                            message: 'Which folder is your project in: ',
+                        });
+                        answers.ver = obj.answer;
+                        prompts.onCompleted();
+                        break;
+                    }
+                    case 'folder': {
+                        answers.folder = obj.answer.trim();
+                        break;
+                    }
+                }
+            },
+            () => {
+            },
+            () => {
+                this.installKit(answers);
+            }
+        );
+
+        prompts.onNext({
+            type: 'list',
+            name: 'kit',
+            message: 'Which starterkit do you wanna install: ',
+            choices: choices,
+            pageSize: 100
+        });
+    }
+
+    installKit(options) {
+        let {
+            kit,
+            ver,
+            folder
+        } = options;
+
+        let kitPath = path.join(this.kitHomePath, kit),
+            kitConfigPath = path.join(kitPath, `.steamer/${kit}.js`),
+            kitConfig = {},
+            isSteamerKit = false,
+            folderPath = path.join(process.cwd(), folder),
+            kitQuestions = [],
+            files = [];
+       
+        git(kitPath)
+            .checkout(ver, () => {
+                // 查看是否能获取steamer规范的脚手架配置
+                if (this.fs.existsSync(kitConfigPath)) {
+                    kitConfig = require(kitConfigPath);
+                    files = kitConfig.files;
+                    files.push('package.json'),
+                    kitQuestions = kitConfig.options;
+                    isSteamerKit = true;
+                }
+                else {
+                    files = this.fs.readdirSync(kitPath);
+                }
+
+                let isEmpty = this.checkEmpty(folderPath),
+                    overwriteQuestion = [];
+                    
+                if (!isEmpty) {
+                    overwriteQuestion.push({
+                        type: 'text',
+                        name: 'overwrite',
+                        message: 'The foler is not empty, do you wanna overrite?',
+                        default: 'n'
+                    });
+                }
+
+                let prompt = inquirer.createPromptModule();
+                prompt(overwriteQuestion).then((answers) => {
+                    if (!answers.hasOwnProperty('overwrite')
+                        || answers.overwrite && answers.overwrite === 'y') {
+                        this.copyFiles({files, kitQuestions, folderPath, kitPath, kit, ver, isSteamerKit});
+                    }
+                }).catch((e) => {
+                    this.error(e.stack);
+                });
+                
+            });
+    }
+
+    /**
+     * copy starterkit files to project folder
+     */
+    copyFiles(options) {
+        let {
+            files,
+            kitQuestions,
+            folderPath,
+            kitPath,
+            kit,
+            ver,
+            isSteamerKit
+        } = options;
+        // 脚手架相关配置问题
+        let prompt = inquirer.createPromptModule();
+        prompt(kitQuestions).then((answers) => {
+            if (answers.webserver) {
+                this.fs.ensureFileSync(path.join(folderPath, 'config/steamer.config.js'));
+                this.fs.writeFileSync(path.join(folderPath, 'config/steamer.config.js'), 'module.exports = ' + JSON.stringify(answers, null, 4));
+            }
+
+            files = files.filter((item) => {
+                return !this.ignoreFiles.includes(item);
+            });
+
+            files.forEach((item) => {
+                let srcFiles = path.join(kitPath, item),
+                    destFile = path.join(folderPath, item);
+                this.fs.copySync(srcFiles, destFile);
+            });
+
+            if (isSteamerKit) {
+                this.createPluginConfig({
+                    kit: kit,
+                    version: ver
+                }, folderPath);
+            }
+
+            this.success(`The project is initiated success in ${folderPath}`);
+        }).catch((e) => {
+            this.error(e.stack);
+        });
+        
+    }
+
+    /**
+     * check folder empty or not
+     * @param {*} folderPath 
+     */
+    checkEmpty(folderPath) {
+        // 查看目标目录是否为空
+        if (folderPath === process.cwd()) {
+            let folderInfo = this.fs.readdirSync(folderPath);
+            folderInfo = folderInfo.filter((item) => {
+                return !this.ignoreFiles.includes(item);
+            });
+            return !folderInfo.length;
+        }
+        else {
+            return !this.fs.existsSync(folderPath);
+        }
+    }
+
+    createPluginConfig(conf, folder) {
+        let config = conf;
+
+        if (!config.version) {
+            config.version = this.pkgJson.version;
+        }
+
+        this.createConfig(config, {
+            folder: folder,
+            overwrite: true,
         });
     }
 
