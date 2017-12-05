@@ -182,7 +182,7 @@ class KitPlugin extends SteamerPlugin {
                         spawn.sync('git', ['remote', 'add', 'origin', repo], { cwd: localPath });
                     }
                 })
-                .fetch(['origin', `refs/tags/${tag}:refs/tags/${tag}`], (err) => {
+                .fetch(['origin', `refs/tags/${tag}:refs/tags/${tag}`, '--depth=1'], (err) => {
                     if (err) {
                         return this.spinFail(kitName, err);
                     }
@@ -209,18 +209,9 @@ class KitPlugin extends SteamerPlugin {
             });
     }
 
-    upgrade(kit, isGlobal) {
-        if (kit && kit !== true, isGlobal) {
-            this.upgradeGlobal(kit).then((newVer) => {
-                if (newVer) {
-                    this.kitOptions.list[kit].versions = this.addVersion(this.kitOptions.list[kit].versions, newVer);
-                    this.kitOptions.list[kit].currentVersion = newVer;
-                    this.kitOptions.list[kit].latestVersion = newVer;
-                    this.writeKitOptions(this.kitOptions);
-                }
-            }).catch((e) => {
-                this.error(e.stack);
-            });
+    upgrade(isGlobal) {
+        if (isGlobal) {
+            this.upgradeGlobal();
         }
         else if (!isGlobal) {
             this.upgradeLocal();
@@ -312,7 +303,57 @@ class KitPlugin extends SteamerPlugin {
         this.fs.writeFileSync(path.join(process.cwd(), 'package.json'), JSON.stringify(pkgJson, null, 4), 'utf-8');
     }
 
-    upgradeGlobal(kitName) {
+    upgradeGlobal() {
+        let kits = this.kitOptions.list,
+        questions = [],
+        choices = [];
+
+        Object.keys(kits).forEach((key) => {
+            choices.push({
+                name: `${key} - ${kits[key].description}`,
+                value: key
+            });
+        });
+
+        choices.unshift({
+            name: 'all starterkits',
+            value: 1
+        });
+
+        let upgradeKits = [],
+            prompt = inquirer.createPromptModule();
+       prompt([{
+            type: 'list',
+            name: 'kit',
+            message: 'Which starterkit do you wanna upgrade: ',
+            choices: choices,
+            pageSize: 100
+        }]).then((answers) => {
+            upgradeKits = (answers.kit == 1) ?  upgradeKits.concat(Object.keys(kits)) : [answers.kit];
+            
+            let upgradeAction = [];
+            upgradeKits.forEach((kitName) => {
+                let action = this.upgradeGlobalKit(kitName);
+                upgradeAction.push(action);
+            });
+
+            return Promise.all(upgradeAction).then((result) => {
+                result.map((item) => {
+                    let kit = item.kitName,
+                        ver = item.newVer;
+                    this.kitOptions.list[kit].versions = this.addVersion(this.kitOptions.list[kit].versions, ver);
+                    this.kitOptions.list[kit].currentVersion = ver;
+                    this.kitOptions.list[kit].latestVersion = ver;
+                });
+                this.writeKitOptions(this.kitOptions);
+            }).catch((e) => {
+                this.error(e.stack);
+            });
+        });
+
+    }
+
+    upgradeGlobalKit(kitName) {
         let kits = this.kitOptions.list;
         
         if (!kits.hasOwnProperty(kitName)) {
@@ -349,7 +390,10 @@ class KitPlugin extends SteamerPlugin {
                             })
                             .branch(['-D', 'master'], () => {
                                 this.spinSuccess(`${kitName}@${newVer} installed`);
-                                resolve(newVer);
+                                resolve({
+                                    kitName,
+                                    newVer
+                                });
                             });
                     }
                     else {
@@ -360,7 +404,10 @@ class KitPlugin extends SteamerPlugin {
                             })
                             .branch(['-D', 'master'], () => {
                                 this.spinSuccess(`${kitName}@${newVer} installed`);
-                                resolve();
+                                resolve({
+                                    kitName,
+                                    newVer
+                                });
                             });
                     }
                 });
