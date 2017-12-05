@@ -41,7 +41,7 @@ class KitPlugin extends SteamerPlugin {
         let argvs = argv || this.argv, // command argv
             isAdd = argvs.add,
             isTag = argvs.tag,
-            isUpgrade = argvs.upgrade,
+            isUpdate = argvs.update || argvs.u,
             isAlias = argvs.alias || null,
             isGlobal = argvs.global || argvs.g,
             isRemove = argvs.remove,
@@ -50,8 +50,8 @@ class KitPlugin extends SteamerPlugin {
         if (isAdd) {
             this.add(isAdd, isTag, isAlias);
         }
-        else if (isUpgrade) {
-            this.upgrade(isUpgrade, isGlobal);
+        else if (isUpdate) {
+            this.update(isGlobal);
         }
         else if (isRemove) {
             this.remove(isRemove);
@@ -209,16 +209,16 @@ class KitPlugin extends SteamerPlugin {
             });
     }
 
-    upgrade(isGlobal) {
+    update(isGlobal) {
         if (isGlobal) {
-            this.upgradeGlobal();
+            this.updateGlobal();
         }
         else if (!isGlobal) {
-            this.upgradeLocal();
+            this.updateLocal();
         }
     }
 
-    upgradeLocal() {    
+    updateLocal() {    
         let pluginConfig = this.readConfig();
         if (!pluginConfig.hasOwnProperty('kit')) {
             return this.error('.steamer/steamer-plugin-kit.js does not have current project kit value.');
@@ -228,7 +228,7 @@ class KitPlugin extends SteamerPlugin {
             curVer = pluginConfig.version;
 
         if (!this.kitOptions.list.hasOwnProperty(kit)) {
-            return this.error(`Please install ${kit} starterkit before you upgrade.`);
+            return this.error(`Please install ${kit} starterkit before you update.`);
         }
 
         let kitOptions = this.kitOptions.list[kit],
@@ -259,7 +259,7 @@ class KitPlugin extends SteamerPlugin {
 
                 spawn.sync(this.config.NPM, ['install'], { stdio: 'inherit', cwd: process.cwd() });
 
-                this.success(`The project has been upgraded to ${kitOptions.latestVersion}`);
+                this.success(`The project has been updated to ${kitOptions.latestVersion}`);
             });
 
         
@@ -303,7 +303,7 @@ class KitPlugin extends SteamerPlugin {
         this.fs.writeFileSync(path.join(process.cwd(), 'package.json'), JSON.stringify(pkgJson, null, 4), 'utf-8');
     }
 
-    upgradeGlobal() {
+    updateGlobal() {
         let kits = this.kitOptions.list,
         questions = [],
         choices = [];
@@ -320,24 +320,24 @@ class KitPlugin extends SteamerPlugin {
             value: 1
         });
 
-        let upgradeKits = [],
+        let updateKits = [],
             prompt = inquirer.createPromptModule();
        prompt([{
             type: 'list',
             name: 'kit',
-            message: 'Which starterkit do you wanna upgrade: ',
+            message: 'Which starterkit do you wanna update: ',
             choices: choices,
             pageSize: 100
         }]).then((answers) => {
-            upgradeKits = (answers.kit == 1) ?  upgradeKits.concat(Object.keys(kits)) : [answers.kit];
+            updateKits = (answers.kit == 1) ?  updateKits.concat(Object.keys(kits)) : [answers.kit];
             
-            let upgradeAction = [];
-            upgradeKits.forEach((kitName) => {
-                let action = this.upgradeGlobalKit(kitName);
-                upgradeAction.push(action);
+            let updateAction = [];
+            updateKits.forEach((kitName) => {
+                let action = this.updateGlobalKit(kitName);
+                updateAction.push(action);
             });
 
-            return Promise.all(upgradeAction).then((result) => {
+            return Promise.all(updateAction).then((result) => {
                 result.map((item) => {
                     let kit = item.kitName,
                         ver = item.newVer;
@@ -353,7 +353,7 @@ class KitPlugin extends SteamerPlugin {
 
     }
 
-    upgradeGlobalKit(kitName) {
+    updateGlobalKit(kitName) {
         let kits = this.kitOptions.list;
         
         if (!kits.hasOwnProperty(kitName)) {
@@ -729,23 +729,28 @@ class KitPlugin extends SteamerPlugin {
     help() {
         this.printUsage('steamer kit manager', 'kit');
         this.printOption([
-            // {
-            //     option: 'list',
-            //     alias: 'l',
-            //     description: 'list all available starter kits'
-            // },
-            // {
-            //     option: 'install',
-            //     alias: 'i',
-            //     value: '<starter kit> [--path|-p] <project path>',
-            //     description: 'install starter kit'
-            // },
-            // {
-            //     option: 'update',
-            //     alias: 'u',
-            //     value: '[<starter kit>]',
-            //     description: 'update starter kit for project'
-            // }
+            {
+                option: 'list',
+                alias: 'l',
+                description: 'list all available starter kits'
+            },
+            {
+                option: 'add',
+                alias: 'i',
+                value: '[<git repo>|<git repo> --tag <tag name>|--alias <starterkit name>]',
+                description: 'install starter kit'
+            },
+            {
+                option: 'update',
+                alias: 'u',
+                value: '[--global]',
+                description: 'update starter kit for project or update global starterkit'
+            },
+            {
+                option: 'remove',
+                value: '<starterkit name>',
+                description: 'remove starterkit'
+            }
         ]);
     }
 }
