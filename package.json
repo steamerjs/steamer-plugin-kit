@@ -26,6 +26,7 @@
   "homepage": "https://github.com/steamerjs/steamer-plugin-kit#readme",
   "dependencies": {
     "compare-versions": "^3.1.0",
+    "cross-spawn": "^5.1.0",
     "inquirer": "^4.0.1",
     "klaw": "^2.1.1",
     "klaw-sync": "^3.0.2",
