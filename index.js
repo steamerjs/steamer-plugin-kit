@@ -60,7 +60,7 @@ class KitPlugin extends SteamerPlugin {
             this.list();
         }
         else {
-            this.install()
+            this.install();
         }
     }
 
@@ -99,7 +99,7 @@ class KitPlugin extends SteamerPlugin {
                 };
             }
             if (opt.tag) {
-                return this.cloneTag(opt)
+                return this.cloneTag(opt);
             }
             else {
                 return this.cloneLatest(opt);
@@ -137,7 +137,7 @@ class KitPlugin extends SteamerPlugin {
                     git(localPath)
                         .silent(true)
                         .branch([pkgJson.version], (err) => {
-                            err && this.spinFail(kitName, err)
+                            err && this.spinFail(kitName, err);
                         })
                         .checkout(pkgJson.version, (err) => {
                             if (err) {
@@ -205,7 +205,7 @@ class KitPlugin extends SteamerPlugin {
                             });
                             resolve();
                         });  
-                })
+                });
             });
     }
 
@@ -291,8 +291,15 @@ class KitPlugin extends SteamerPlugin {
 
     copyUpdatePkgJson(kitPath) {
         this.fs.removeSync(path.join(process.cwd(), 'package-lock.json'));
-        let oldPkgJson = require(path.join(process.cwd(), 'package.json')),
-            newPkgJson = require(path.join(kitPath, 'package.json'));
+        
+
+        let oldPkgJsonPath = path.join(process.cwd(), 'package.json');
+        let newPkgJsonPath = path.join(kitPath, 'package.json');
+        this.delRequireCache(oldPkgJsonPath);
+        this.delRequireCache(newPkgJsonPath);
+        
+        let oldPkgJson = require(oldPkgJsonPath);
+        let newPkgJson = require(newPkgJsonPath);
 
         let pkgJson = _.merge({}, oldPkgJson, {
             version: newPkgJson.version,
@@ -438,6 +445,8 @@ class KitPlugin extends SteamerPlugin {
             this.fs.writeFileSync(this.kitOptionsPath, `module.exports = ${JSON.stringify(options, null, 4)};`, 'utf-8');
         }
 
+        this.delRequireCache(this.kitOptionsPath);
+
         return require(this.kitOptionsPath);
     }
 
@@ -473,6 +482,7 @@ class KitPlugin extends SteamerPlugin {
     getPkgJson(localPath) {
         let pkgJsonPath = path.join(localPath, 'package.json');
         if (this.fs.existsSync(pkgJsonPath)) {
+            this.delRequireCache(pkgJsonPath);
             return require(pkgJsonPath);
         }
         else {
@@ -614,6 +624,7 @@ class KitPlugin extends SteamerPlugin {
             .checkout(ver, () => {
                 // 查看是否能获取steamer规范的脚手架配置
                 if (this.fs.existsSync(kitConfigPath)) {
+                    this.delRequireCache(kitConfigPath);
                     kitConfig = require(kitConfigPath);
                     files = kitConfig.installFiles || kitConfig.files;
                     files.push('package.json'),
@@ -723,11 +734,17 @@ class KitPlugin extends SteamerPlugin {
         });
     }
 
+    delRequireCache(filePath) {
+        if (require.cache[filePath]) {
+            delete require.cache[filePath];
+        }
+    }
+
     /**
      * [help]
      */
     help() {
-        this.printUsage('steamer kit manager', 'kit');
+        this.printUsage(this.description, 'kit');
         this.printOption([
             {
                 option: 'list',

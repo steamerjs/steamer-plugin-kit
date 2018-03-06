@@ -1,0 +1,37 @@
+steamer kit --list
+
+steamer kit --add [git url]
+steamer kit --add [git url|kit name] --tag [tagName]
+
+// steamer kit --upgrade 更新全局脚手架
+
+steamer kit --update // 更新当前脚手架
+
+steamer start
+steamer dist
+
+
+npm 缺点
+1. 版本控制不方便
+2. nvm后丢失
+
+
+git 缺点
+1. 来源不明 steamer-team-xx 部份解决问题
+2. 命名可能冲突 origin/namespace/repo 版本号用分支控制
+
+
+kits = {
+    list: {
+        'steamer-react': {
+            latestVersion: 1.0.0,
+            currentVersion: 1.0.0,
+            description: '',
+            versions: [
+
+            ],
+            url: ''
+        }
+    },
+    timestamp: ''
+};
