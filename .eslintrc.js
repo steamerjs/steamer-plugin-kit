@@ -16,5 +16,13 @@ module.exports = {
     	"semi": 2,
         "no-inner-declarations": 1,
         "no-extra-boolean-cast": 0,
+    },
+    "globals": {
+        "describe": true,
+        "it": true,
+        "before": true,
+        "after": true,
+        "beforeEach": true,
+        "afterEach": true
     }
 };

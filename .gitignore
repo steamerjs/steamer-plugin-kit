@@ -3,4 +3,4 @@ backup
 .DS_Store
 npm-debug.log
 coverage
-project
+/test/project

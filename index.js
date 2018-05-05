@@ -4,7 +4,7 @@ const SteamerPlugin = require('steamer-plugin'),
     path = require('path'),
     url = require('url'),
     ora = require('ora'),
-    Rx = require('rx'),
+    Rx = require('rxjs'),
     inquirer = require('inquirer'),
     _ = require('lodash'),
     git = require('simple-git'),
@@ -35,6 +35,8 @@ class KitPlugin extends SteamerPlugin {
         this.spinner = ora('Loading unicorns');
         this.kitOptions = this.getKitOptions();
         this.ignoreFiles = ['.git', '.svn'];
+
+        this.git = git;
     }
 
     init(argv) {
@@ -59,20 +61,33 @@ class KitPlugin extends SteamerPlugin {
         else if (isList) {
             this.list();
         }
-        else {
+        // ignore other command options
+        else if (Object.keys(argvs).length <= 4) {
             this.install();
         }
     }
 
+    /**
+     * add starterkit to $Home/.steamer/starterkits
+     * @param {String} repo repo url
+     * @param {String} tag tag name
+     * @param {String} alias alias name
+     */
     add(repo, tag, alias) {
         this.clone(repo, tag, alias).then(() => {
-            // console.log(this.kitOptions)
+            // console.log(this.kitOptions);
             this.writeKitOptions(this.kitOptions);
         }).catch((e) => {
             this.error(e.stack);
         });
     }
 
+    /**
+     * start cloning starterkit
+     * @param {String} repo repo url
+     * @param {String} tag tag name
+     * @param {String} alias alias name
+     */
     clone(repo, tag = null, alias) {
         let nameSpace = this.getNameSpace(repo),
             kitName = alias || this.getKitName(nameSpace),
@@ -107,6 +122,10 @@ class KitPlugin extends SteamerPlugin {
         }
     }
 
+    /**
+     * clone latest starterkit
+     * @param {Object``} options 
+     */
     cloneLatest(options) {
         let {
             repo,
@@ -114,7 +133,7 @@ class KitPlugin extends SteamerPlugin {
             localPath,
         } = options;
         return new Promise((resolve, reject) => {
-            git()
+            this.git()
                 .silent(true)
                 .exec(() => {
                     this.spinner.start();
@@ -134,7 +153,7 @@ class KitPlugin extends SteamerPlugin {
                             pkgJson.version
                         ]
                     });
-                    git(localPath)
+                    this.git(localPath)
                         .silent(true)
                         .branch([pkgJson.version], (err) => {
                             err && this.spinFail(kitName, err);
@@ -167,7 +186,7 @@ class KitPlugin extends SteamerPlugin {
         this.fs.ensureDirSync(localPath); 
 
         return new Promise((resolve, reject) => {
-            git(localPath)
+            this.git(localPath)
                 .silent(true)
                 .exec(() => {
                     this.spinner.start();
@@ -187,7 +206,7 @@ class KitPlugin extends SteamerPlugin {
                         return this.spinFail(kitName, err);
                     }
                     let version = this.getVersion(tag);
-                    git(localPath)
+                    this.git(localPath)
                         .silent(true)
                         .branch([`${version}`, `${tag}`], (err) => {
                             err && this.spinFail(kitName, err);
@@ -245,7 +264,7 @@ class KitPlugin extends SteamerPlugin {
             return !this.ignoreFiles.includes(item);
         });
 
-        git(kitPath)
+        this.git(kitPath)
             .checkout(kitOptions.latestVersion, (err) => {
                 if (err) {
                     return this.error(err);
@@ -329,7 +348,8 @@ class KitPlugin extends SteamerPlugin {
 
         let updateKits = [],
             prompt = inquirer.createPromptModule();
-       prompt([{
+
+        prompt([{
             type: 'list',
             name: 'kit',
             message: 'Which starterkit do you wanna update: ',
@@ -346,8 +366,9 @@ class KitPlugin extends SteamerPlugin {
 
             return Promise.all(updateAction).then((result) => {
                 result.map((item) => {
-                    let kit = item.kitName,
-                        ver = item.newVer;
+                    let kit = item.kitName;
+                    let ver = item.newVer;
+
                     this.kitOptions.list[kit].versions = this.addVersion(this.kitOptions.list[kit].versions, ver);
                     this.kitOptions.list[kit].currentVersion = ver;
                     this.kitOptions.list[kit].latestVersion = ver;
@@ -370,7 +391,7 @@ class KitPlugin extends SteamerPlugin {
         let kitOptions = kits[kitName];
 
         return new Promise((resolve, reject) => {
-            git(kitOptions.path)
+            this.git(kitOptions.path)
                 .silent(true)
                 .exec(() => {
                     this.spinner.start();
@@ -387,7 +408,7 @@ class KitPlugin extends SteamerPlugin {
                         newVer = curKitOptions.version;
                     
                     if (compareVer(newVer, oldVer) > 0) {
-                        git(kitOptions.path)
+                        this.git(kitOptions.path)
                             .silent(true)
                             .branch([newVer, 'master'], (err) => {
                                 err && this.spinFail(kitName, err);
@@ -404,7 +425,7 @@ class KitPlugin extends SteamerPlugin {
                             });
                     }
                     else {
-                        git(kitOptions.path)
+                        this.git(kitOptions.path)
                             .silent(true)
                             .checkout(newVer, (err) => {
                                 err && this.spinFail(kitName, err);
@@ -434,6 +455,9 @@ class KitPlugin extends SteamerPlugin {
         this.success(`The kit ${kit} is removed.`);
     }
 
+    /**
+     * get starterkit options from $Home/.steamer/starterkits/starterkits.js
+     */
     getKitOptions() {
         
         if (!this.fs.existsSync(this.kitOptionsPath)) {
@@ -450,6 +474,11 @@ class KitPlugin extends SteamerPlugin {
         return require(this.kitOptionsPath);
     }
 
+    /**
+     * write starterkit options
+     * @param {Object} options starter kit options
+     * @param {String} key starterkit name
+     */
     writeKitOptions(options, key) {
         try {
             let updatedOptions = this.getKitOptions();
@@ -563,7 +592,7 @@ class KitPlugin extends SteamerPlugin {
             (obj) => {
                 switch (obj.name) {
                     case 'kit': {
-                        prompts.onNext({
+                        prompts.next({
                             type: 'list',
                             name: 'ver',
                             message: 'Which version do you need: ',
@@ -573,14 +602,14 @@ class KitPlugin extends SteamerPlugin {
                         break;
                     }
                     case 'ver': {
-                        prompts.onNext({
+                        prompts.next({
                             type: 'text',
                             name: 'folder',
                             default: './',
                             message: 'Which folder is your project in: ',
                         });
                         answers.ver = obj.answer;
-                        prompts.onCompleted();
+                        prompts.complete();
                         break;
                     }
                     case 'folder': {
@@ -596,7 +625,7 @@ class KitPlugin extends SteamerPlugin {
             }
         );
 
-        prompts.onNext({
+        prompts.next({
             type: 'list',
             name: 'kit',
             message: 'Which starterkit do you wanna install: ',
@@ -620,7 +649,7 @@ class KitPlugin extends SteamerPlugin {
             kitQuestions = [],
             files = [];
        
-        git(kitPath)
+        this.git(kitPath)
             .checkout(ver, () => {
                 // 查看是否能获取steamer规范的脚手架配置
                 if (this.fs.existsSync(kitConfigPath)) {
@@ -656,7 +685,6 @@ class KitPlugin extends SteamerPlugin {
                 }).catch((e) => {
                     this.error(e.stack);
                 });
-                
             });
     }
 
