@@ -30,6 +30,7 @@ class KitPlugin extends SteamerPlugin {
         // this.globalNodeModules = this.getGlobalModules();
 
         this.config = this.readSteamerConfig();
+        console.log(this.config);
         this.kitHomePath = path.join(this.getGlobalHome(), '.steamer', 'starterkits');
         this.kitOptionsPath = path.join(this.kitHomePath, 'starterkits.js');
         this.spinner = ora('Loading unicorns');
