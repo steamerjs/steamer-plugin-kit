@@ -45,6 +45,10 @@ function trimString(str) {
 }
 
 
+before(function() {
+    fs.removeSync(path.join(process.cwd(), TEST, '.steamer'));
+});
+
 describe('list, help', function() {
 
     it('list', function() {
@@ -692,5 +696,38 @@ describe('remove', function() {
         expect(fs.existsSync(kitPath)).to.be(true);
         kit.init();
         expect(fs.existsSync(kitPath)).to.be(false);
+    });
+});
+
+describe('util', function() {
+    it('checkEmpty', function() {
+        let kit = new SteamerKit({
+            
+        });
+
+        expect(kit.checkEmpty(process.cwd())).to.be(false);
+        expect(kit.checkEmpty(path.join(PROJECT, 'steamer-project'))).to.be(true);
+    });
+
+    it('getNameSpace', function() {
+        let kit = new SteamerKit({
+            
+        });
+        
+        expect(kit.getNameSpace('https://github.com/steamerjs/steamer-react.git')).to.be(kit.getNameSpace('git@github.com:steamerjs/steamer-react.git'));
+    });
+
+    it('getKitOptions', function() {
+        let now = Date.now();
+        let kit = new SteamerKit({
+            
+        });
+        kit.kitOptionsPath = path.join(process.cwd(), TEST, '.steamer/config.js');
+        let options = kit.getKitOptions();
+        options.timestamp = now;
+        expect(options).to.eql({
+            list: {},
+            timestamp: now
+        });
     });
 });

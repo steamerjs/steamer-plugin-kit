@@ -4,3 +4,4 @@ backup
 npm-debug.log
 coverage
 /test/project
+/test/.steamer
