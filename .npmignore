@@ -2,3 +2,4 @@ spec
 specPlugin
 test
 .DS_Store
+coverage
