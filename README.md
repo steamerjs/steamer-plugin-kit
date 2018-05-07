@@ -118,6 +118,25 @@ kits = {
 };
 ```
 
+## 基于模板生成页面
+```javascript
+steamer kit --template
+// or
+steamer kit -t
+
+// 初次使用时做好配置，然后选择模板
+? type the template source folder: ./tools/template
+? type your template destination folder:  ./src/page
+? type your npm command(npm|tnpm|cnpm etc):  npm
+? which template do you like:  (Use arrow keys)
+❯ preact-list
+  react-simple-mobx
+  react-simple-redux
+  react-spa-mobx
+  react-spa-redux
+  react-typescript
+```
+
 
 ## 开发
 

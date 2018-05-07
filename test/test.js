@@ -731,3 +731,92 @@ describe('util', function() {
         });
     });
 });
+
+describe("install template", function() {
+
+    let project3 = path.join(PROJECT, 'steamer-project3');
+
+    before(() => {
+        fs.copySync(path.join(process.cwd(), TEST, 'kit/steamer-example1'), path.join(PROJECT, 'steamer-project3'));        
+        process.chdir(project3);
+    });
+
+    after(() => {
+        process.chdir(CUR_ENV);
+    });
+
+	it("install template", function(done) {
+
+		this.timeout(10000);
+
+
+		var kit = new SteamerKit({
+			t: true,
+		});
+		kit.init();
+
+		userInput("data", "\n", 1);
+		userInput("data", "\n", 2);
+		userInput("data", "npm\n", 3);
+		userInput("data", "\n", 4);
+		userInput("data", "detail\n", 5);
+
+		userInputEnd(function() {
+			let folderInfo = fs.readdirSync(path.resolve("src/page/detail"));
+			expect(folderInfo).to.eql([
+				'index.css',
+				'index.html',
+				'index.js'
+			]);
+
+			let jsResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/detail.js"), "utf-8")),
+				jsContent = trimString(fs.readFileSync(path.resolve("src/page/detail/index.js"), "utf-8"));
+
+			expect(jsResultContent).to.eql(jsContent);
+
+			let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/detail.html"), "utf-8")),
+				htmlContent = trimString(fs.readFileSync(path.resolve("src/page/detail/index.html"), "utf-8"));
+
+            expect(htmlResultContent).to.eql(htmlContent);
+
+			done();
+		}, 6);
+
+	});
+
+	it("install template with template config", function(done) {
+
+		this.timeout(10000);
+
+		var kit = new SteamerKit({
+			template: true,
+		});
+		kit.init();
+
+		userInput("data", "\n", 1);
+		userInput("data", "comment\n", 2);
+
+		userInputEnd(function() {
+			let folderInfo = fs.readdirSync(path.resolve("src/page/comment"));
+			expect(folderInfo).to.eql([
+				'index.css',
+				'index.html',
+				'index.js'
+			]);
+
+			let jsResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/comment.js"), "utf-8")),
+				jsContent = trimString(fs.readFileSync(path.resolve("src/page/comment/index.js"), "utf-8"));
+
+			expect(jsResultContent).to.eql(jsContent);
+
+			let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/comment.html"), "utf-8")),
+				htmlContent = trimString(fs.readFileSync(path.resolve("src/page/comment/index.html"), "utf-8"));
+
+			expect(htmlResultContent).to.eql(htmlContent);
+
+			done();
+		}, 3);
+
+	});
+
+});
