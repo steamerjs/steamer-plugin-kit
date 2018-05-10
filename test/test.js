@@ -123,6 +123,7 @@ describe('add starterkit', function() {
             if (!fs.existsSync(kitOptionsPath)) {
                 fs.ensureFileSync(kitOptionsPath);
             }
+
             return kitOptions;
         });
         let kitStub = sinon.stub(kit, "clone").usingPromise(bluebird.Promise).resolves().callsFake(function() {
@@ -132,9 +133,9 @@ describe('add starterkit', function() {
         kit.init();
 
         setTimeout(() => {
-            kitGetKitOptionsStub.restore();
             expect(kit.getKitOptions()).to.eql(kitOptions);
             kitStub.restore();
+            kitGetKitOptionsStub.restore();
             cb();
         }, 100);
     });
@@ -223,6 +224,8 @@ describe('add starterkit', function() {
                     }
                     
                     if (execTime === 1) {
+                        kit.kitOptions.list['steamer-example1'].url = repoUrl;
+                        kit.kitOptions.list['steamer-example1'].path = localPath;
                         expect(kit.kitOptions.list).to.eql({
                             'steamer-example1': {
                                 url: repoUrl,
