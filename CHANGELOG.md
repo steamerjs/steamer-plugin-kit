@@ -1,3 +1,6 @@
+## 3.0.0-beta.6
+	- 尝试修复cloneLatest报错无法写入kitOption的问题
+
 ## 3.0.0-beta.5
 	- 补齐模板生成页面功能
 
