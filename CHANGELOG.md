@@ -1,3 +1,6 @@
+## 3.0.0-beta.8
+	- 文件拷贝时校验是否存在
+
 ## 3.0.0-beta.7
 	- 修复writeKitOpionts错误
 
