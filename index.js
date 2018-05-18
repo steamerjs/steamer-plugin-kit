@@ -609,7 +609,7 @@ class KitPlugin extends SteamerPlugin {
             let content = this.fs.readFileSync(file.path, 'utf-8');
 
             Object.keys(replaceObj).forEach((key) => {
-                content = content.replace(new RegExp('<% ' + key + ' %>', 'ig'), function (match) {
+                content = content.replace(new RegExp('<% ' + key + ' %>', 'g'), function (match) {
                     return replaceObj[key];
                 });
             });
