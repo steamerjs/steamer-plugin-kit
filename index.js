@@ -579,7 +579,7 @@ class KitPlugin extends SteamerPlugin {
 
             this.fs.copySync(srcFolder, targetFolder);
 
-            this.walkAndReplace(targetFolder, ['.js', '.html'], { title: answers.path });
+            this.walkAndReplace(targetFolder, ['.js', '.jsx', '.ts', '.tsx', '.html'], { Title: answers.path.replace(/^[a-z]/, l => l.toUpperCase()), title: answers.path.replace(/^[A-Z]/, L => L.toLowerCase()) });
 
             this.installDependency(path.resolve(localConfig.template.src), answers.template, localConfig.template.npm);
 
