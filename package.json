@@ -1,7 +1,7 @@
 {
-  "name": "steamer-plugin-ydjkit",
+  "name": "steamer-plugin-ykit",
   "version": "3.0.0-beta.8",
-  "description": "steamer-plugin-ydjkit",
+  "description": "steamer-plugin-ykit",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
