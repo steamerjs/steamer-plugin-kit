@@ -26,7 +26,7 @@ class KitPlugin extends SteamerPlugin {
     constructor(args) {
         super(args);
         this.argv = args;
-        this.pluginName = 'steamer-plugin-kit';
+        this.pluginName = 'steamer-plugin-ykit';
         this.description = 'manage starterkits';
         // this.globalNodeModules = this.getGlobalModules();
 
@@ -523,7 +523,7 @@ class KitPlugin extends SteamerPlugin {
                 type: 'input',
                 name: 'npm',
                 message: 'type your npm command(npm|tnpm|cnpm etc): ',
-                default: 'npm',
+                default: 'yarn',
             }]).then((answers) => {
 
                 localConfig.template = {};
@@ -813,6 +813,7 @@ class KitPlugin extends SteamerPlugin {
                             default: './',
                             message: 'Which folder is your project in: ',
                         });
+                        console.log('run this')
                         answers.ver = obj.answer;
                         prompts.complete();
                         break;
@@ -908,6 +909,7 @@ class KitPlugin extends SteamerPlugin {
         } = options;
         // 脚手架相关配置问题
         let prompt = inquirer.createPromptModule();
+        console.log(files)
         prompt(kitQuestions).then((answers) => {
             if (answers.webserver) {
                 this.fs.ensureFileSync(path.join(folderPath, 'config/steamer.config.js'));
