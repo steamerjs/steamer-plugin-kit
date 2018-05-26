@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/steamerjs/steamer-plugin-kit.git"
+    "url": "git+https://github.com/YDJ-FE/steamer-plugin-ykit.git"
   },
   "keywords": [
     "steamer",
@@ -21,9 +21,9 @@
   "author": "steamerjs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/steamerjs/steamer-plugin-kit/issues"
+    "url": "https://github.com/YDJ-FE/steamer-plugin-ykit/issues"
   },
-  "homepage": "https://github.com/steamerjs/steamer-plugin-kit#readme",
+  "homepage": "https://github.com/YDJ-FE/steamer-plugin-ykit#readme",
   "dependencies": {
     "compare-versions": "^3.1.0",
     "cross-spawn": "^6.0.5",
