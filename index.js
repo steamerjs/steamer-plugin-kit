@@ -813,13 +813,21 @@ class KitPlugin extends SteamerPlugin {
                             message: 'Which folder is your project in: ',
                         });
                         answers.ver = obj.answer;
-                        prompts.complete();
                         break;
                     }
                     case 'folder': {
+                        prompts.next({
+                            type: 'text',
+                            name: 'projectName',
+                            message: 'type your project name:',
+                        });
                         answers.folder = obj.answer.trim();
+                        prompts.complete();
                         break;
                     }
+                    case 'projectName':
+                        answers.projectName = obj.answer.trim();
+                        break;
                 }
             },
             () => {
@@ -842,7 +850,8 @@ class KitPlugin extends SteamerPlugin {
         let {
             kit,
             ver,
-            folder
+            folder,
+            projectName
         } = options;
 
         let kitPath = path.join(this.kitHomePath, kit),
@@ -884,7 +893,7 @@ class KitPlugin extends SteamerPlugin {
                 prompt(overwriteQuestion).then((answers) => {
                     if (!answers.hasOwnProperty('overwrite')
                         || answers.overwrite && answers.overwrite === 'y') {
-                        this.copyFiles({ files, kitQuestions, folderPath, kitPath, kit, ver, isSteamerKit });
+                        this.copyFiles({ files, kitQuestions, folderPath, kitPath, kit, ver, isSteamerKit, projectName, kitConfig});
                     }
                 }).catch((e) => {
                     this.error(e.stack);
@@ -903,7 +912,9 @@ class KitPlugin extends SteamerPlugin {
             kitPath,
             kit,
             ver,
-            isSteamerKit
+            isSteamerKit,
+            projectName,
+            kitConfig
         } = options;
         // 脚手架相关配置问题
         let prompt = inquirer.createPromptModule();
@@ -933,6 +944,19 @@ class KitPlugin extends SteamerPlugin {
                 }, folderPath);
             }
 
+            // 替换项目名称
+            if(!!projectName) {
+                const oldPkgJson = this.getPkgJson(folderPath);
+                let pkgJson = _.merge({}, oldPkgJson, {
+                    name: projectName
+                });
+                this.fs.writeFileSync(path.join(folderPath, 'package.json'), JSON.stringify(pkgJson, null, 4), 'utf-8');
+            }
+            // beforeInstall 自定义行为
+            if(kitConfig.beforeInstall && _.isFunction(kitConfig.beforeInstall)) {
+                kitConfig.beforeInstall.call(this, answers, folderPath);
+            }
+            
             // 安装项目node_modules包
             spawn.sync(this.config.NPM, ['install'], { stdio: 'inherit', cwd: folderPath });
             this.success(`The project is initiated success in ${folderPath}`);
