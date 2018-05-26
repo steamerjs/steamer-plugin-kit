@@ -402,16 +402,22 @@ describe('install starterkit', function() {
         userInput('data', '\n', 1);
         userInput('data', '\n', 2);
         userInput('data', `./test/project/steamer-project1\n`, 3);
-        userInput('data', '\n', 4);
+        userInput('data', 'steamer-project1\n', 4);
         userInput('data', '\n', 5);
         userInput('data', '\n', 6);
         userInput('data', '\n', 7);
+        userInput('data', '\n', 8);
+        userInput('data', '\n', 9);
 
         userInputEnd(() => {
             expect(fs.readdirSync(PROJECT)).to.eql(['steamer-project1']);
             kitGitStub.restore();
+            let folderInfo = fs.readdirSync(path.join(PROJECT, 'steamer-project1'));
             done();
-        }, 8);
+            let pkg = require(path.join(PROJECT, 'steamer-project1/package.json'));
+            expect(pkg.name).to.eql('steamer-project1');
+            expect(pkg.scripts.test).to.eql('jest');
+        }, 10);
     });
 });
 
