@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-ykit",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "steamer-plugin-ykit",
   "main": "index.js",
   "bin": "index.js",
