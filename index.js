@@ -924,6 +924,11 @@ class KitPlugin extends SteamerPlugin {
                 this.fs.writeFileSync(path.join(folderPath, 'config/steamer.config.js'), 'module.exports = ' + JSON.stringify(answers, null, 4));
             }
 
+            // 复制文件前的自定义行为
+            if(kitConfig.beforeCopy && _.isFunction(kitConfig.beforeCopy)) {
+                kitConfig.beforeCopy.call(this, answers, folderPath);
+            }
+
             files = files.filter((item) => {
                 return !this.ignoreFiles.includes(item);
             });
