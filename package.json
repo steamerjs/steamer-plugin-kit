@@ -1,7 +1,7 @@
 {
-  "name": "steamer-plugin-ykit",
+  "name": "steamer-plugin-kit",
   "version": "3.0.1",
-  "description": "steamer-plugin-ykit",
+  "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
@@ -12,20 +12,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YDJ-FE/steamer-plugin-ykit.git"
+    "url": "git+https://github.com/steamerjs/steamer-plugin-kit.git"
   },
   "keywords": [
     "steamer",
     "kit"
   ],
-  "author": "vegawong",
+  "author": "steamerjs",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YDJ-FE/steamer-plugin-ykit/issues"
+    "url": "https://github.com/steamerjs/steamer-plugin-kit/issues"
   },
-  "homepage": "https://github.com/YDJ-FE/steamer-plugin-ykit#readme",
+  "homepage": "https://github.com/steamerjs/steamer-plugin-kit#readme",
   "dependencies": {
-    "compare-versions": "^3.1.0",
+    "compare-versions": "^3.2.1",
     "cross-spawn": "^6.0.5",
     "inquirer": "^5.2.0",
     "klaw": "^2.1.1",
@@ -33,7 +33,7 @@
     "lodash": "^4.17.10",
     "ora": "^2.1.0",
     "rxjs": "^5.5.2",
-    "simple-git": "^1.92.0",
+    "simple-git": "^1.95.0",
     "steamer-plugin": "^1.0.4"
   },
   "devDependencies": {
@@ -44,9 +44,9 @@
     "eslint": "^4.19.1",
     "expect.js": "^0.3.1",
     "istanbul": "^0.4.5",
-    "mocha": "^5.1.1",
+    "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0",
-    "sinon": "^5.0.3"
+    "sinon": "^5.0.10"
   },
   "engines": {
     "node": ">=6.4.0"
