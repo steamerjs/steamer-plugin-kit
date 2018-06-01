@@ -1,16 +1,16 @@
 "use strict";
 
-const path = require('path'),
-    os = require('os'),
-    fs = require('fs-extra'),
-    chalk = require('chalk'),
-    bluebird = require('bluebird'),
-    expect = require('expect.js'),
-    sinon = require('sinon'),
-    compareVersions = require('compare-versions'),
-    cp = require('child_process'),
-    spawnSync = cp.spawnSync,
-    SteamerKit = require('../index');
+const path = require('path');
+const os = require('os');
+const fs = require('fs-extra');
+const chalk = require('chalk');
+const bluebird = require('bluebird');
+const expect = require('expect.js');
+const sinon = require('sinon');
+const compareVersions = require('compare-versions');
+const cp = require('child_process');
+const spawnSync = cp.spawnSync;
+const SteamerKit = require('../index');
 
 var nodeVer = process.version.replace('V', '').replace('v', ''),
     isNode8 = compareVersions(nodeVer, '8.0.0') > -1;

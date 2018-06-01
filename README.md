@@ -160,6 +160,62 @@ npm link
 npm test
 ```
 
+## 脚手架生命周期
+3.0.2 版本后，新增脚手架生命周期，例如，如果脚手架叫做 `steamer-example`，则在脚手架相关配置文件 `.steamer/steamer-example.js` 中可以写如下生命周期：
+
+```javascript
+const path = require("path");
+const fs = require("fs");
+
+module.exports = {
+    /**
+     * some other codes here
+     */
+
+    // 初始化脚手架时，在拷贝文件发生前
+    beforeInstallCopy: function (answers, folderPath) {
+        console.log('====beforeInstallCopy====');
+    },
+
+    // 初始化脚手架时，在拷贝文件发生后
+    afterInstallCopy: function (answers, folderPath) {
+        console.log('====afterInstallCopy====');
+    },
+
+    // 初始化脚手架时，在安装依赖发生前
+    beforeInstallDep: function (answers, folderPath) {
+        console.log('====afterInstallDep====');
+    },
+
+    // 初始化脚手架时，在安装依赖发生后
+    afterInstallDep: function (answers, folderPath) {
+        console.log('====afterInstallDep====');
+    },
+
+    // 更新本地项目脚手架时，在拷贝文件发生前
+    beforeUpdateCopy: function (answers, folderPath) {
+        console.log('====beforeUpdateCopy====');
+    },
+
+    // 更新本地项目脚手架时，在拷贝文件发生后
+    afterUpdateCopy: function (answers, folderPath) {
+        console.log('====afterUpdateCopy====');
+    },
+
+    // 更新本地项目脚手架时，在更新依赖发生前
+    beforeUpdateDep: function (answers, folderPath) {
+        console.log('====beforeUpdateDep====');
+    },
+
+    // 更新本地项目脚手架时，在更新依赖发生后
+    afterUpdateDep: function (answers, folderPath) {
+        console.log('====afterUpdateDep====');
+    },
+
+};
+
+```
+
 ## Starter Kit 的例子
 符合 `steamer` 规范的 `Starter Kit`，可以参考 [steamer-example](https://github.com/steamerjs/steamer-example/)，并仿照规范，进行接入。如何想开发，可以使用下面命令初始化：
 
