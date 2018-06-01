@@ -12,7 +12,16 @@ module.exports = {
         ".gitignore"
     ],
 
-    beforeInstall: function (answers, folderPath) {
+    beforeInstallCopy: function (answers, folderPath) {
+        console.log('====beforeInstallCopy====');
+    },
+
+    afterInstallCopy: function (answers, folderPath) {
+        console.log('====afterInstallCopy====');
+    },
+
+    beforeInstallDep: function (answers, folderPath) {
+        console.log('====beforeInstallDep====');
         if (answers.jest) {
             let pkg = this.getPkgJson(folderPath);
             pkg.scripts = Object.assign({}, pkg.scripts, {
@@ -24,6 +33,10 @@ module.exports = {
                 "utf-8"
             );
         }
+    },
+
+    afterInstallDep: function (answers, folderPath) {
+        console.log('====afterInstallDep====');
     },
 
     options: [

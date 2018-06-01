@@ -298,8 +298,8 @@ class KitPlugin extends SteamerPlugin {
             );
         }
 
-        let kit = pluginConfig.kit,
-            curVer = pluginConfig.version;
+        let kit = pluginConfig.kit;
+        let curVer = pluginConfig.version;
 
         if (!this.kitOptions.list.hasOwnProperty(kit)) {
             return this.error(
@@ -307,8 +307,10 @@ class KitPlugin extends SteamerPlugin {
             );
         }
 
-        let kitOptions = this.kitOptions.list[kit],
-            kitPath = kitOptions.path;
+        let kitOptions = this.kitOptions.list[kit];
+        let kitPath = kitOptions.path;
+        let kitConfigPath = path.join(kitPath, `.steamer/${kit}.js`);
+        let kitConfig = this.readKitConfig(kitConfigPath);
 
         if (compareVer(curVer, kitOptions.latestVersion) >= 0) {
             return this.info(
@@ -316,8 +318,8 @@ class KitPlugin extends SteamerPlugin {
             );
         }
 
+        pluginConfig.version = kitOptions.latestVersion; // 更新当前项目的脚手架版本
         let keepFiles = ["src", "config", "tools"];
-
         let files = this.fs.readdirSync(kitPath);
         files = files.filter(item => {
             return !this.ignoreFiles.includes(item);
@@ -328,16 +330,36 @@ class KitPlugin extends SteamerPlugin {
                 return this.error(err);
             }
 
-            let copyFiles = this.backupFiles(files, keepFiles, kitPath);
+            let copyFiles = this.backupFiles(files, keepFiles);
+            // 复制文件前的自定义行为
+            if (kitConfig.beforeUpdateCopy && _.isFunction(kitConfig.beforeUpdateCopy)) {
+                kitConfig.beforeUpdateCopy.bind(this)();
+            }
 
             this.copyUpdateFiles(copyFiles, kitPath);
 
-            this.copyUpdatePkgJson(kitPath);
+            // 复制文件后的自定义行为
+            if (kitConfig.afterUpdateCopy && _.isFunction(kitConfig.afterUpdateCopy)) {
+                kitConfig.afterUpdateCopy.bind(this)();
+            }
+
+            this.copyUpdatePkgJson(kitPath); // 更新项目package.json
+
+            this.createConfig(pluginConfig, { overwrite: true }); //更新项目.steamer/steamer-plugin-kit.js插件配置
+
+            // beforeUpdateDep 的自定义行为
+            if (kitConfig.beforeUpdateDep && _.isFunction(kitConfig.beforeUpdateDep)) {
+                kitConfig.beforeUpdateDep.bind(this)();
+            }
 
             spawn.sync(this.config.NPM, ["install"], {
                 stdio: "inherit",
                 cwd: process.cwd()
             });
+
+            if (kitConfig.afterUpdateDep && _.isFunction(kitConfig.afterUpdateDep)) {
+                kitConfig.afterUpdateDep.bind(this)();
+            }
 
             this.success(
                 `The project has been updated to ${kitOptions.latestVersion}`
@@ -345,7 +367,12 @@ class KitPlugin extends SteamerPlugin {
         });
     }
 
-    backupFiles(files, keepFiles, kitPath) {
+    /**
+     * back up files for project which is about to update
+     * @param {Array} files files to copy
+     * @param {Array} keepFiles files to keep
+     */
+    backupFiles(files, keepFiles) {
         files = files.filter(item => {
             return !keepFiles.includes(item);
         });
@@ -353,10 +380,10 @@ class KitPlugin extends SteamerPlugin {
         let ts = Date.now();
 
         files.forEach(item => {
-            this.fs.copySync(
-                path.join(kitPath, item),
-                path.join(process.cwd(), `backup/${ts}`, item)
-            );
+            let file = path.join(process.cwd(), item);
+            if (this.fs.existsSync(file)) {
+                this.fs.copySync(file, path.join(process.cwd(), `backup/${ts}`, item));
+            }
         });
 
         return files;
@@ -909,12 +936,14 @@ class KitPlugin extends SteamerPlugin {
                         break;
                     }
                     case "folder": {
+                        answers.folder = obj.answer.trim();
                         prompts.next({
                             type: "text",
                             name: "projectName",
-                            message: "type your project name:"
+                            message: "type your project name:",
+                            default: path.basename(answers.folder)
                         });
-                        answers.folder = obj.answer.trim();
+
                         prompts.complete();
                         break;
                     }
@@ -938,6 +967,15 @@ class KitPlugin extends SteamerPlugin {
         });
     }
 
+    /**
+     *  read starterkit config
+     * @param {String} kitConfigPath
+     */
+    readKitConfig(kitConfigPath) {
+        this.delRequireCache(kitConfigPath);
+        return require(kitConfigPath);
+    }
+
     installKit(options) {
         let { kit, ver, folder, projectName } = options;
 
@@ -952,14 +990,17 @@ class KitPlugin extends SteamerPlugin {
         this.git(kitPath).checkout(ver, () => {
             // 查看是否能获取steamer规范的脚手架配置
             if (this.fs.existsSync(kitConfigPath)) {
-                this.delRequireCache(kitConfigPath);
-                kitConfig = require(kitConfigPath);
-                files = kitConfig.installFiles || kitConfig.files;
-                files.push("package.json"), (kitQuestions = kitConfig.options);
+                kitConfig = this.readKitConfig(kitConfigPath);
+                files = new Set(kitConfig.installFiles || kitConfig.files);
+                files.add("package.json"), (kitQuestions = kitConfig.options);
                 isSteamerKit = true;
-            } else {
-                files = this.fs.readdirSync(kitPath);
             }
+            else {
+                files = new Set(this.fs.readdirSync(kitPath));
+            }
+
+            // 做去重
+            files = Array.from(files);
 
             let isEmpty = this.checkEmpty(folderPath),
                 overwriteQuestion = [];
@@ -968,7 +1009,7 @@ class KitPlugin extends SteamerPlugin {
                 overwriteQuestion.push({
                     type: "text",
                     name: "overwrite",
-                    message: "The foler is not empty, do you wanna overrite?",
+                    message: "The foler is not empty, do you wanna overwrite?",
                     default: "n"
                 });
             }
@@ -1029,11 +1070,8 @@ class KitPlugin extends SteamerPlugin {
                 }
 
                 // 复制文件前的自定义行为
-                if (
-                    kitConfig.beforeCopy &&
-                    _.isFunction(kitConfig.beforeCopy)
-                ) {
-                    kitConfig.beforeCopy.call(this, answers, folderPath);
+                if (kitConfig.beforeInstallCopy && _.isFunction(kitConfig.beforeInstallCopy)) {
+                    kitConfig.beforeInstallCopy.bind(this)(answers, folderPath);
                 }
 
                 files = files.filter(item => {
@@ -1048,6 +1086,11 @@ class KitPlugin extends SteamerPlugin {
                         this.fs.copySync(srcFiles, destFile);
                     }
                 });
+
+                // 复制文件后的自定义行为
+                if (kitConfig.afterInstallCopy && _.isFunction(kitConfig.afterInstallCopy)) {
+                    kitConfig.afterInstallCopy.bind(this)(answers, folderPath);
+                }
 
                 if (isSteamerKit) {
                     this.createPluginConfig(
@@ -1072,8 +1115,8 @@ class KitPlugin extends SteamerPlugin {
                     );
                 }
                 // beforeInstall 自定义行为
-                if (kitConfig.beforeInstall && _.isFunction(kitConfig.beforeInstall)) {
-                    kitConfig.beforeInstall.bind(this)(answers, folderPath);
+                if (kitConfig.beforeInstallDep && _.isFunction(kitConfig.beforeInstallDep)) {
+                    kitConfig.beforeInstallDep.bind(this)(answers, folderPath);
                 }
 
                 // 安装项目node_modules包
@@ -1083,8 +1126,8 @@ class KitPlugin extends SteamerPlugin {
                 });
 
                 // afterInstall 自定义行为
-                if (kitConfig.afterInstall && _.isFunction(kitConfig.beforeInstall)) {
-                    kitConfig.afterInstall.bind(this)(answers, folderPath);
+                if (kitConfig.afterInstallDep && _.isFunction(kitConfig.afterInstallDep)) {
+                    kitConfig.afterInstallDep.bind(this)(answers, folderPath);
                 }
 
                 this.success(

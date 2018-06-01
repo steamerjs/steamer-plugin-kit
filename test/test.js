@@ -415,10 +415,13 @@ describe('install starterkit', function () {
             expect(fs.readdirSync(PROJECT)).to.eql(['steamer-project1']);
             kitGitStub.restore();
             let folderInfo = fs.readdirSync(path.join(PROJECT, 'steamer-project1'));
-            done();
+
             let pkg = require(path.join(PROJECT, 'steamer-project1/package.json'));
             expect(pkg.name).to.eql('steamer-project1');
             expect(pkg.scripts.test).to.eql('jest');
+
+
+            done();
         }, 10);
     });
 });
