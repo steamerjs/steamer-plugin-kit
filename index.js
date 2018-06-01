@@ -48,6 +48,7 @@ class KitPlugin extends SteamerPlugin {
         this.kitOptions = this.getKitOptions();
         this.ignoreFiles = [".git", ".svn"];
 
+        this.spawn = spawn;
         this.git = git;
     }
 
@@ -228,8 +229,8 @@ class KitPlugin extends SteamerPlugin {
                     );
 
                     if (!isGitFolderExists) {
-                        spawn.sync("git", ["init"], { cwd: localPath });
-                        spawn.sync("git", ["remote", "add", "origin", repo], {
+                        this.spawn.sync("git", ["init"], { cwd: localPath });
+                        this.spawn.sync("git", ["remote", "add", "origin", repo], {
                             cwd: localPath
                         });
                     }
@@ -352,7 +353,7 @@ class KitPlugin extends SteamerPlugin {
                 kitConfig.beforeUpdateDep.bind(this)();
             }
 
-            spawn.sync(this.config.NPM, ["install"], {
+            this.spawn.sync(this.config.NPM, ["install"], {
                 stdio: "inherit",
                 cwd: process.cwd()
             });
@@ -606,7 +607,7 @@ class KitPlugin extends SteamerPlugin {
                         type: "input",
                         name: "npm",
                         message: "type your npm command(npm|tnpm|cnpm etc): ",
-                        default: "yarn"
+                        default: "npm"
                     }
                 ])
                 .then(answers => {
@@ -1120,7 +1121,7 @@ class KitPlugin extends SteamerPlugin {
                 }
 
                 // 安装项目node_modules包
-                spawn.sync(this.config.NPM, ["install"], {
+                this.spawn.sync(this.config.NPM, ["install"], {
                     stdio: "inherit",
                     cwd: folderPath
                 });
