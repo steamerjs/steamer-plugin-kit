@@ -137,31 +137,8 @@ steamer kit -t
   react-typescript
 ```
 
-
-## 开发
-
-将此模块链接到全局下
-
-```javascript
-npm link
-```
-
-安装以下 `scoped package`
-
-```javascript
-cd specPlugin/scope-package/steamer-react-hy
-
-npm link
-```
-
-运行测试用例
-
-```javascript
-npm test
-```
-
 ## 脚手架生命周期
-3.0.2 版本后，新增脚手架生命周期，例如，如果脚手架叫做 `steamer-example`，则在脚手架相关配置文件 `.steamer/steamer-example.js` 中可以写如下生命周期：
+3.0.0 版本后，新增脚手架生命周期，例如，如果脚手架叫做 `steamer-example`，则在脚手架相关配置文件 `.steamer/steamer-example.js` 中可以写如下生命周期：
 
 ```javascript
 const path = require("path");
