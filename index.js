@@ -919,10 +919,7 @@ class KitPlugin extends SteamerPlugin {
         // 脚手架相关配置问题
         let prompt = inquirer.createPromptModule();
         prompt(kitQuestions).then((answers) => {
-            if (answers.webserver) {
-                this.fs.ensureFileSync(path.join(folderPath, 'config/steamer.config.js'));
-                this.fs.writeFileSync(path.join(folderPath, 'config/steamer.config.js'), 'module.exports = ' + JSON.stringify(answers, null, 4));
-            }
+           
 
             // 复制文件前的自定义行为
             if(kitConfig.beforeCopy && _.isFunction(kitConfig.beforeCopy)) {
@@ -960,6 +957,11 @@ class KitPlugin extends SteamerPlugin {
             // beforeInstall 自定义行为
             if(kitConfig.beforeInstall && _.isFunction(kitConfig.beforeInstall)) {
                 kitConfig.beforeInstall.call(this, answers, folderPath);
+            }
+
+            if (answers.webserver) {
+                this.fs.ensureFileSync(path.join(folderPath, 'config/steamer.config.js'));
+                this.fs.writeFileSync(path.join(folderPath, 'config/steamer.config.js'), 'module.exports = ' + JSON.stringify(answers, null, 4));
             }
             
             // 安装项目node_modules包
