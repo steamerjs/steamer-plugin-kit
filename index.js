@@ -920,6 +920,7 @@ class KitPlugin extends SteamerPlugin {
         let prompt = inquirer.createPromptModule();
         prompt(kitQuestions).then((answers) => {
            
+            answers = Object.assign({}, answers, {projectName});
 
             // 复制文件前的自定义行为
             if(kitConfig.beforeCopy && _.isFunction(kitConfig.beforeCopy)) {
