@@ -137,27 +137,60 @@ steamer kit -t
   react-typescript
 ```
 
-
-## 开发
-
-将此模块链接到全局下
+## 脚手架生命周期
+3.0.0 版本后，新增脚手架生命周期，例如，如果脚手架叫做 `steamer-example`，则在脚手架相关配置文件 `.steamer/steamer-example.js` 中可以写如下生命周期：
 
 ```javascript
-npm link
-```
+const path = require("path");
+const fs = require("fs");
 
-安装以下 `scoped package`
+module.exports = {
+    /**
+     * some other codes here
+     */
 
-```javascript
-cd specPlugin/scope-package/steamer-react-hy
+    // 初始化脚手架时，在拷贝文件发生前
+    beforeInstallCopy: function (answers, folderPath) {
+        console.log('====beforeInstallCopy====');
+    },
 
-npm link
-```
+    // 初始化脚手架时，在拷贝文件发生后
+    afterInstallCopy: function (answers, folderPath) {
+        console.log('====afterInstallCopy====');
+    },
 
-运行测试用例
+    // 初始化脚手架时，在安装依赖发生前
+    beforeInstallDep: function (answers, folderPath) {
+        console.log('====afterInstallDep====');
+    },
 
-```javascript
-npm test
+    // 初始化脚手架时，在安装依赖发生后
+    afterInstallDep: function (answers, folderPath) {
+        console.log('====afterInstallDep====');
+    },
+
+    // 更新本地项目脚手架时，在拷贝文件发生前
+    beforeUpdateCopy: function (answers, folderPath) {
+        console.log('====beforeUpdateCopy====');
+    },
+
+    // 更新本地项目脚手架时，在拷贝文件发生后
+    afterUpdateCopy: function (answers, folderPath) {
+        console.log('====afterUpdateCopy====');
+    },
+
+    // 更新本地项目脚手架时，在更新依赖发生前
+    beforeUpdateDep: function (answers, folderPath) {
+        console.log('====beforeUpdateDep====');
+    },
+
+    // 更新本地项目脚手架时，在更新依赖发生后
+    afterUpdateDep: function (answers, folderPath) {
+        console.log('====afterUpdateDep====');
+    },
+
+};
+
 ```
 
 ## Starter Kit 的例子

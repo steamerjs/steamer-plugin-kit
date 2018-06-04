@@ -9,7 +9,7 @@ module.exports = {
         ".gitignore",
     ],
     options: [
-    	{
+        {
             type: 'input',
             name: 'webserver',
             message: 'html url(//localhost:9000/)'
@@ -19,7 +19,7 @@ module.exports = {
             name: 'cdn',
             message: 'cdn url(//localhost:8000/)'
         },
-    	{
+        {
             type: 'input',
             name: 'port',
             message: 'development server port(9000)'
