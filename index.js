@@ -1060,15 +1060,6 @@ class KitPlugin extends SteamerPlugin {
         let prompt = inquirer.createPromptModule();
         prompt(kitQuestions)
             .then(answers => {
-                if (answers.webserver) {
-                    this.fs.ensureFileSync(
-                        path.join(folderPath, "config/steamer.config.js")
-                    );
-                    this.fs.writeFileSync(
-                        path.join(folderPath, "config/steamer.config.js"),
-                        "module.exports = " + JSON.stringify(answers, null, 4)
-                    );
-                }
 
                 // 复制文件前的自定义行为
                 if (kitConfig.beforeInstallCopy && _.isFunction(kitConfig.beforeInstallCopy)) {
@@ -1087,6 +1078,16 @@ class KitPlugin extends SteamerPlugin {
                         this.fs.copySync(srcFiles, destFile);
                     }
                 });
+
+                if (answers.webserver) {
+                    this.fs.ensureFileSync(
+                        path.join(folderPath, "config/steamer.config.js")
+                    );
+                    this.fs.writeFileSync(
+                        path.join(folderPath, "config/steamer.config.js"),
+                        "module.exports = " + JSON.stringify(answers, null, 4)
+                    );
+                }
 
                 // 复制文件后的自定义行为
                 if (kitConfig.afterInstallCopy && _.isFunction(kitConfig.afterInstallCopy)) {
@@ -1177,7 +1178,7 @@ class KitPlugin extends SteamerPlugin {
      * [help]
      */
     help() {
-        this.printUsage(this.description, "kit");
+        this.printUsage(this.description, "ykit");
         this.printOption([
             {
                 option: "list",
