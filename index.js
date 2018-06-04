@@ -26,17 +26,25 @@ class KitPlugin extends SteamerPlugin {
     constructor(args) {
         super(args);
         this.argv = args;
-        this.pluginName = 'steamer-plugin-ykit';
-        this.description = 'manage starterkits';
+        this.pluginName = "steamer-plugin-kit";
+        this.description = "manage starterkits";
         // this.globalNodeModules = this.getGlobalModules();
-        this.config = _.merge({}, {
-            NPM: 'npm',
-            TEAM: 'default'
-        }, this.readSteamerConfig());
+        this.config = _.merge(
+            {},
+            {
+                NPM: "npm",
+                TEAM: "default"
+            },
+            this.readSteamerConfig()
+        );
 
-        this.kitHomePath = path.join(this.getGlobalHome(), '.steamer', 'starterkits');
-        this.kitOptionsPath = path.join(this.kitHomePath, 'starterkits.js');
-        this.spinner = ora('Loading unicorns');
+        this.kitHomePath = path.join(
+            this.getGlobalHome(),
+            ".steamer",
+            "starterkits"
+        );
+        this.kitOptionsPath = path.join(this.kitHomePath, "starterkits.js");
+        this.spinner = ora("Loading unicorns");
         this.kitOptions = this.getKitOptions();
         this.ignoreFiles = [".git", ".svn"];
 
@@ -1050,80 +1058,86 @@ class KitPlugin extends SteamerPlugin {
         } = options;
         // 脚手架相关配置问题
         let prompt = inquirer.createPromptModule();
-        prompt(kitQuestions).then((answers) => {
-
-            answers = Object.assign({}, answers, { projectName });
-
-            // 复制文件前的自定义行为
-            if (kitConfig.beforeCopy && _.isFunction(kitConfig.beforeCopy)) {
-                kitConfig.beforeCopy.call(this, answers, folderPath);
-            }
-
-
-
-            files = files.filter(item => {
-                return !this.ignoreFiles.includes(item);
-            });
-
-            files.forEach(item => {
-                let srcFiles = path.join(kitPath, item),
-                    destFile = path.join(folderPath, item);
-
-                if (this.fs.existsSync(srcFiles)) {
-                    this.fs.copySync(srcFiles, destFile);
+        prompt(kitQuestions)
+            .then(answers => {
+                if (answers.webserver) {
+                    this.fs.ensureFileSync(
+                        path.join(folderPath, "config/steamer.config.js")
+                    );
+                    this.fs.writeFileSync(
+                        path.join(folderPath, "config/steamer.config.js"),
+                        "module.exports = " + JSON.stringify(answers, null, 4)
+                    );
                 }
-            });
 
-            // 复制文件后的自定义行为
-            if (kitConfig.afterInstallCopy && _.isFunction(kitConfig.afterInstallCopy)) {
-                kitConfig.afterInstallCopy.bind(this)(answers, folderPath);
-            }
+                // 复制文件前的自定义行为
+                if (kitConfig.beforeInstallCopy && _.isFunction(kitConfig.beforeInstallCopy)) {
+                    kitConfig.beforeInstallCopy.bind(this)(answers, folderPath);
+                }
 
-            if (isSteamerKit) {
-                this.createPluginConfig(
-                    {
-                        kit: kit,
-                        version: ver
-                    },
-                    folderPath
-                );
-            }
-
-            // 替换项目名称
-            if (!!projectName) {
-                const oldPkgJson = this.getPkgJson(folderPath);
-                let pkgJson = _.merge({}, oldPkgJson, {
-                    name: projectName
+                files = files.filter(item => {
+                    return !this.ignoreFiles.includes(item);
                 });
-                this.fs.writeFileSync(path.join(folderPath, 'package.json'), JSON.stringify(pkgJson, null, 4), 'utf-8');
-            }
-            // beforeInstall 自定义行为
-            if (kitConfig.beforeInstallDep && _.isFunction(kitConfig.beforeInstallDep)) {
-                kitConfig.beforeInstallDep.bind(this)(answers, folderPath);
-            }
 
-            if (answers.webserver) {
-                this.fs.ensureFileSync(path.join(folderPath, 'config/steamer.config.js'));
-                this.fs.writeFileSync(path.join(folderPath, 'config/steamer.config.js'), 'module.exports = ' + JSON.stringify(answers, null, 4));
-            }
+                files.forEach(item => {
+                    let srcFiles = path.join(kitPath, item),
+                        destFile = path.join(folderPath, item);
 
-            // 安装项目node_modules包
-            this.spawn.sync(this.config.NPM, ["install"], {
-                stdio: "inherit",
-                cwd: folderPath
+                    if (this.fs.existsSync(srcFiles)) {
+                        this.fs.copySync(srcFiles, destFile);
+                    }
+                });
+
+                // 复制文件后的自定义行为
+                if (kitConfig.afterInstallCopy && _.isFunction(kitConfig.afterInstallCopy)) {
+                    kitConfig.afterInstallCopy.bind(this)(answers, folderPath);
+                }
+
+                if (isSteamerKit) {
+                    this.createPluginConfig(
+                        {
+                            kit: kit,
+                            version: ver
+                        },
+                        folderPath
+                    );
+                }
+
+                // 替换项目名称
+                if (!!projectName) {
+                    const oldPkgJson = this.getPkgJson(folderPath);
+                    let pkgJson = _.merge({}, oldPkgJson, {
+                        name: projectName
+                    });
+                    this.fs.writeFileSync(
+                        path.join(folderPath, "package.json"),
+                        JSON.stringify(pkgJson, null, 4),
+                        "utf-8"
+                    );
+                }
+                // beforeInstall 自定义行为
+                if (kitConfig.beforeInstallDep && _.isFunction(kitConfig.beforeInstallDep)) {
+                    kitConfig.beforeInstallDep.bind(this)(answers, folderPath);
+                }
+
+                // 安装项目node_modules包
+                this.spawn.sync(this.config.NPM, ["install"], {
+                    stdio: "inherit",
+                    cwd: folderPath
+                });
+
+                // afterInstall 自定义行为
+                if (kitConfig.afterInstallDep && _.isFunction(kitConfig.afterInstallDep)) {
+                    kitConfig.afterInstallDep.bind(this)(answers, folderPath);
+                }
+
+                this.success(
+                    `The project is initiated success in ${folderPath}`
+                );
+            })
+            .catch(e => {
+                this.error(e.stack);
             });
-
-            // afterInstall 自定义行为
-            if (kitConfig.afterInstallDep && _.isFunction(kitConfig.afterInstallDep)) {
-                kitConfig.afterInstallDep.bind(this)(answers, folderPath);
-            }
-
-            this.success(
-                `The project is initiated success in ${folderPath}`
-            );
-        }).catch((e) => {
-            this.error(e.stack);
-        });
     }
 
     /**
