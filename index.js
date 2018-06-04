@@ -1098,7 +1098,7 @@ class KitPlugin extends SteamerPlugin {
                 this.fs.writeFileSync(path.join(folderPath, 'package.json'), JSON.stringify(pkgJson, null, 4), 'utf-8');
             }
             // beforeInstall 自定义行为
-            if (kitConfig.beforeInstall && _.isFunction(kitConfig.beforeInstall)) {
+            if (kitConfig.beforeInstallDep && _.isFunction(kitConfig.beforeInstallDep)) {
                 kitConfig.beforeInstallDep.bind(this)(answers, folderPath);
             }
 
