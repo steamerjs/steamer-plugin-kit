@@ -1061,6 +1061,10 @@ class KitPlugin extends SteamerPlugin {
         prompt(kitQuestions)
             .then(answers => {
 
+                answers = Object.assign({}, answers, {
+                    projectName
+                });
+
                 // 复制文件前的自定义行为
                 if (kitConfig.beforeInstallCopy && _.isFunction(kitConfig.beforeInstallCopy)) {
                     kitConfig.beforeInstallCopy.bind(this)(answers, folderPath);
