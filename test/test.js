@@ -87,7 +87,7 @@ describe('list, help', function () {
 
         kit.help();
 
-        expect(printUsageStub.calledWith('manage starterkits', 'kit')).to.eql(true);
+        expect(printUsageStub.calledWith('manage starterkits', 'ykit')).to.eql(true);
         expect(printUsageStub.calledOnce).to.eql(true);
 
         printUsageStub.restore();
