@@ -1182,7 +1182,7 @@ class KitPlugin extends SteamerPlugin {
      * [help]
      */
     help() {
-        this.printUsage(this.description, "ykit");
+        this.printUsage(this.description, "kit");
         this.printOption([
             {
                 option: "list",

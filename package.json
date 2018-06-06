@@ -1,7 +1,7 @@
 {
-  "name": "steamer-plugin-ykit",
-  "version": "3.0.5",
-  "description": "steamer-plugin-ykit",
+  "name": "steamer-plugin-kit",
+  "version": "3.0.0-beta.11",
+  "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
   "scripts": {
@@ -12,18 +12,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YDJ-FE/steamer-plugin-ykit.git"
+    "url": "git+https://github.com/steamerjs/steamer-plugin-kit.git"
   },
   "keywords": [
     "steamer",
     "kit"
   ],
-  "author": "vegawong",
+  "author": "heyli",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/YDJ-FE/steamer-plugin-ykit/issues"
+    "url": "https://github.com/steamerjs/steamer-plugin-kit/issues"
   },
-  "homepage": "https://github.com/YDJ-FE/steamer-plugin-ykit#readme",
+  "homepage": "https://github.com/steamerjs/steamer-plugin-kit#readme",
   "dependencies": {
     "compare-versions": "^3.2.1",
     "cross-spawn": "^6.0.5",
