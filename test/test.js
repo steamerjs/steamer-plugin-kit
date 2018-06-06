@@ -87,7 +87,7 @@ describe('list, help', function () {
 
         kit.help();
 
-        expect(printUsageStub.calledWith('manage starterkits', 'kit')).to.eql(true);
+        expect(printUsageStub.calledWith('manage starterkits', 'ykit')).to.eql(true);
         expect(printUsageStub.calledOnce).to.eql(true);
 
         printUsageStub.restore();
@@ -401,11 +401,14 @@ describe('install starterkit', function () {
 
         kit.init();
 
+        // common questions
         userInput('data', '\n', 1);
         userInput('data', '\n', 2);
         userInput('data', `./test/project/steamer-project1\n`, 3);
         userInput('data', 'steamer-project1\n', 4);
-        userInput('data', '\n', 5);
+
+        // starterkit questions
+        userInput('data', '//localhost:3000\n', 5);
         userInput('data', '\n', 6);
         userInput('data', '\n', 7);
         userInput('data', '\n', 8);
@@ -414,12 +417,10 @@ describe('install starterkit', function () {
         userInputEnd(() => {
             expect(fs.readdirSync(PROJECT)).to.eql(['steamer-project1']);
             kitGitStub.restore();
-            let folderInfo = fs.readdirSync(path.join(PROJECT, 'steamer-project1'));
 
             let pkg = require(path.join(PROJECT, 'steamer-project1/package.json'));
             expect(pkg.name).to.eql('steamer-project1');
             expect(pkg.scripts.test).to.eql('jest');
-
 
             done();
         }, 10);
