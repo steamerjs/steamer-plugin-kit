@@ -1,16 +1,14 @@
-"use strict";
-
-const SteamerPlugin = require("steamer-plugin"),
-    path = require("path"),
-    url = require("url"),
-    ora = require("ora"),
-    Rx = require("rxjs"),
-    inquirer = require("inquirer"),
-    _ = require("lodash"),
-    git = require("simple-git"),
-    compareVer = require("compare-versions"),
-    klawSync = require("klaw-sync"),
-    spawn = require("cross-spawn");
+const SteamerPlugin = require('steamer-plugin');
+const path = require('path');
+const url = require('url');
+const ora = require('ora');
+const Rx = require('rxjs');
+const inquirer = require('inquirer');
+const _ = require('lodash');
+const git = require('simple-git');
+const compareVer = require('compare-versions');
+const klawSync = require('klaw-sync');
+const spawn = require('cross-spawn');
 
 /**
  * // .steamer/steamer.plugin-kit.js
@@ -26,27 +24,27 @@ class KitPlugin extends SteamerPlugin {
     constructor(args) {
         super(args);
         this.argv = args;
-        this.pluginName = "steamer-plugin-kit";
-        this.description = "manage starterkits";
+        this.pluginName = 'steamer-plugin-kit';
+        this.description = 'manage starterkits';
         // this.globalNodeModules = this.getGlobalModules();
         this.config = _.merge(
             {},
             {
-                NPM: "npm",
-                TEAM: "default"
+                NPM: 'npm',
+                TEAM: 'default'
             },
             this.readSteamerConfig()
         );
 
         this.kitHomePath = path.join(
             this.getGlobalHome(),
-            ".steamer",
-            "starterkits"
+            '.steamer',
+            'starterkits'
         );
-        this.kitOptionsPath = path.join(this.kitHomePath, "starterkits.js");
-        this.spinner = ora("Loading unicorns");
+        this.kitOptionsPath = path.join(this.kitHomePath, 'starterkits.js');
+        this.spinner = ora('Loading unicorns');
         this.kitOptions = this.getKitOptions();
-        this.ignoreFiles = [".git", ".svn"];
+        this.ignoreFiles = ['.git', '.svn'];
 
         this.spawn = spawn;
         this.git = git;
@@ -104,9 +102,9 @@ class KitPlugin extends SteamerPlugin {
      * @param {String} alias alias name
      */
     clone(repo, tag = null, alias) {
-        let nameSpace = this.getNameSpace(repo),
-            kitName = alias || this.getKitName(nameSpace),
-            localPath = path.join(this.kitHomePath, kitName);
+        let nameSpace = this.getNameSpace(repo);
+        let kitName = alias || this.getKitName(nameSpace);
+        let localPath = path.join(this.kitHomePath, kitName);
 
         let opt = {
             repo,
@@ -153,10 +151,10 @@ class KitPlugin extends SteamerPlugin {
                 .silent(true)
                 .exec(() => {
                     this.spinner.start();
-                    this.spinner.color = "cyan";
+                    this.spinner.color = 'cyan';
                     this.spinner.text = `installing ${kitName}`;
                 })
-                .clone(repo, localPath, "--depth=1", err => {
+                .clone(repo, localPath, '--depth=1', err => {
                     err && this.spinFail(kitName, err);
                     if (err) {
                         reject(err);
@@ -197,7 +195,7 @@ class KitPlugin extends SteamerPlugin {
                                 );
                             }
                         })
-                        .branch(["-D", "master"], err => {
+                        .branch(['-D', 'master'], err => {
                             if (err) {
                                 reject(err);
                             } else {
@@ -220,26 +218,26 @@ class KitPlugin extends SteamerPlugin {
                 .silent(true)
                 .exec(() => {
                     this.spinner.start();
-                    this.spinner.color = "cyan";
+                    this.spinner.color = 'cyan';
                     this.spinner.text = `installing ${kitName}`;
                 })
                 .exec(() => {
                     let isGitFolderExists = this.fs.existsSync(
-                        path.join(localPath, ".git")
+                        path.join(localPath, '.git')
                     );
 
                     if (!isGitFolderExists) {
-                        this.spawn.sync("git", ["init"], { cwd: localPath });
-                        this.spawn.sync("git", ["remote", "add", "origin", repo], {
+                        this.spawn.sync('git', ['init'], { cwd: localPath });
+                        this.spawn.sync('git', ['remote', 'add', 'origin', repo], {
                             cwd: localPath
                         });
                     }
                 })
                 .fetch(
                     [
-                        "origin",
+                        'origin',
                         `refs/tags/${tag}:refs/tags/${tag}`,
-                        "--depth=1"
+                        '--depth=1'
                     ],
                     err => {
                         if (err) {
@@ -260,11 +258,11 @@ class KitPlugin extends SteamerPlugin {
                                 this.spinSuccess(
                                     `${kitName}@${version} installed`
                                 );
-                                let pkgJson = this.getPkgJson(localPath),
-                                    versions = this.addVersion(
-                                        this.kitOptions.list[kitName].versions,
-                                        pkgJson.version
-                                    );
+                                let pkgJson = this.getPkgJson(localPath);
+                                let versions = this.addVersion(
+                                    this.kitOptions.list[kitName].versions,
+                                    pkgJson.version
+                                );
 
                                 this.kitOptions.list[kitName] = this._.merge(
                                     {},
@@ -293,9 +291,9 @@ class KitPlugin extends SteamerPlugin {
 
     updateLocal() {
         let pluginConfig = this.readConfig();
-        if (!pluginConfig.hasOwnProperty("kit")) {
+        if (!pluginConfig.hasOwnProperty('kit')) {
             return this.error(
-                ".steamer/steamer-plugin-kit.js does not have current project kit value."
+                '.steamer/steamer-plugin-kit.js does not have current project kit value.'
             );
         }
 
@@ -315,12 +313,12 @@ class KitPlugin extends SteamerPlugin {
 
         if (compareVer(curVer, kitOptions.latestVersion) >= 0) {
             return this.info(
-                "Your project has already used the latest starterkit."
+                'Your project has already used the latest starterkit.'
             );
         }
 
         pluginConfig.version = kitOptions.latestVersion; // 更新当前项目的脚手架版本
-        let keepFiles = ["src", "config", "tools"];
+        let keepFiles = ['src', 'config', 'tools'];
         let files = this.fs.readdirSync(kitPath);
         files = files.filter(item => {
             return !this.ignoreFiles.includes(item);
@@ -346,15 +344,15 @@ class KitPlugin extends SteamerPlugin {
 
             this.copyUpdatePkgJson(kitPath); // 更新项目package.json
 
-            this.createConfig(pluginConfig, { overwrite: true }); //更新项目.steamer/steamer-plugin-kit.js插件配置
+            this.createConfig(pluginConfig, { overwrite: true }); // 更新项目.steamer/steamer-plugin-kit.js插件配置
 
             // beforeUpdateDep 的自定义行为
             if (kitConfig.beforeUpdateDep && _.isFunction(kitConfig.beforeUpdateDep)) {
                 kitConfig.beforeUpdateDep.bind(this)();
             }
 
-            this.spawn.sync(this.config.NPM, ["install"], {
-                stdio: "inherit",
+            this.spawn.sync(this.config.NPM, ['install'], {
+                stdio: 'inherit',
                 cwd: process.cwd()
             });
 
@@ -373,8 +371,8 @@ class KitPlugin extends SteamerPlugin {
      * @param {Array} files files to copy
      * @param {Array} keepFiles files to keep
      */
-    backupFiles(files, keepFiles) {
-        files = files.filter(item => {
+    backupFiles(filesParam, keepFiles) {
+        let files = filesParam.filter(item => {
             return !keepFiles.includes(item);
         });
 
@@ -390,9 +388,9 @@ class KitPlugin extends SteamerPlugin {
         return files;
     }
 
-    copyUpdateFiles(files, kitPath) {
-        files = files.filter(item => {
-            return item !== "package.json" && item !== "package-lock.json";
+    copyUpdateFiles(filesParam, kitPath) {
+        let files = filesParam.filter(item => {
+            return item !== 'package.json' && item !== 'package-lock.json';
         });
 
         files.forEach(item => {
@@ -404,13 +402,13 @@ class KitPlugin extends SteamerPlugin {
     }
 
     copyUpdatePkgJson(kitPath) {
-        let pkgLockPath = path.join(process.cwd(), "package-lock.json");
+        let pkgLockPath = path.join(process.cwd(), 'package-lock.json');
         if (this.fs.existsSync(pkgLockPath)) {
             this.fs.removeSync(pkgLockPath);
         }
 
-        let oldPkgJsonPath = path.join(process.cwd(), "package.json");
-        let newPkgJsonPath = path.join(kitPath, "package.json");
+        let oldPkgJsonPath = path.join(process.cwd(), 'package.json');
+        let newPkgJsonPath = path.join(kitPath, 'package.json');
         this.delRequireCache(oldPkgJsonPath);
         this.delRequireCache(newPkgJsonPath);
 
@@ -424,15 +422,15 @@ class KitPlugin extends SteamerPlugin {
         });
 
         this.fs.writeFileSync(
-            path.join(process.cwd(), "package.json"),
+            path.join(process.cwd(), 'package.json'),
             JSON.stringify(pkgJson, null, 4),
-            "utf-8"
+            'utf-8'
         );
     }
 
     updateGlobal() {
-        let kits = this.kitOptions.list,
-            choices = [];
+        let kits = this.kitOptions.list;
+        let choices = [];
 
         Object.keys(kits).forEach(key => {
             choices.push({
@@ -442,24 +440,24 @@ class KitPlugin extends SteamerPlugin {
         });
 
         choices.unshift({
-            name: "all starterkits",
+            name: 'all starterkits',
             value: 1
         });
 
-        let updateKits = [],
-            prompt = inquirer.createPromptModule();
+        let updateKits = [];
+        let prompt = inquirer.createPromptModule();
 
         prompt([
             {
-                type: "list",
-                name: "kit",
-                message: "Which starterkit do you wanna update: ",
+                type: 'list',
+                name: 'kit',
+                message: 'Which starterkit do you wanna update: ',
                 choices: choices,
                 pageSize: 100
             }
         ]).then(answers => {
             updateKits =
-                answers.kit == 1
+                answers.kit === 1
                     ? updateKits.concat(Object.keys(kits))
                     : [answers.kit];
 
@@ -471,7 +469,7 @@ class KitPlugin extends SteamerPlugin {
 
             return Promise.all(updateAction)
                 .then(result => {
-                    result.map(item => {
+                    result.forEach((item) => {
                         let kit = item.kitName;
                         let ver = item.newVer;
 
@@ -504,32 +502,32 @@ class KitPlugin extends SteamerPlugin {
                 .silent(true)
                 .exec(() => {
                     this.spinner.start();
-                    this.spinner.color = "cyan";
+                    this.spinner.color = 'cyan';
                     this.spinner.text = `updating ${kitName}`;
                 })
-                .fetch(["origin", "master:master"], err => {
+                .fetch(['origin', 'master:master'], err => {
                     err && this.spinFail(kitName, err);
                 })
-                .checkout("master")
+                .checkout('master')
                 .exec(() => {
                     let curKitOptions = require(path.join(
                         this.kitHomePath,
                         kitName,
-                        "package.json"
-                    )),
-                        oldVer = kitOptions.latestVersion,
-                        newVer = curKitOptions.version;
+                        'package.json'
+                    ));
+                    let oldVer = kitOptions.latestVersion;
+                    let newVer = curKitOptions.version;
 
                     if (compareVer(newVer, oldVer) > 0) {
                         this.git(kitOptions.path)
                             .silent(true)
-                            .branch([newVer, "master"], err => {
+                            .branch([newVer, 'master'], err => {
                                 err && this.spinFail(kitName, err);
                             })
                             .checkout(newVer, err => {
                                 err && this.spinFail(kitName, err);
                             })
-                            .branch(["-D", "master"], () => {
+                            .branch(['-D', 'master'], () => {
                                 this.spinSuccess(
                                     `${kitName}@${newVer} installed`
                                 );
@@ -544,7 +542,7 @@ class KitPlugin extends SteamerPlugin {
                             .checkout(newVer, err => {
                                 err && this.spinFail(kitName, err);
                             })
-                            .branch(["-D", "master"], () => {
+                            .branch(['-D', 'master'], () => {
                                 this.spinSuccess(
                                     `${kitName}@${newVer} installed`
                                 );
@@ -562,13 +560,13 @@ class KitPlugin extends SteamerPlugin {
      * Create page from template
      */
     template() {
-        let localConfig = this.readConfig(),
-            kit = localConfig.kit || null,
-            folder = path.resolve();
+        let localConfig = this.readConfig();
+        // let kit = localConfig.kit || null;
+        // let folder = path.resolve();
 
         // this.checkConfigExist(localConfig);
 
-        let pkgJsonPath = path.join(process.cwd(), "package.json");
+        let pkgJsonPath = path.join(process.cwd(), 'package.json');
 
         // 如果 localConfig 为空，则创建，兼容直接 git clone 脚手架的情况
         if (
@@ -576,7 +574,7 @@ class KitPlugin extends SteamerPlugin {
             !Object.keys(localConfig).length
         ) {
             this.pkgJson =
-                require(path.join(process.cwd(), "package.json")) || {};
+                require(path.join(process.cwd(), 'package.json')) || {};
 
             localConfig.kit = this.pkgJson.name;
             localConfig.version = this.pkgJson.version;
@@ -592,22 +590,22 @@ class KitPlugin extends SteamerPlugin {
             inquirer
                 .prompt([
                     {
-                        type: "text",
-                        name: "src",
-                        message: "type the template source folder:",
-                        default: "./tools/template"
+                        type: 'text',
+                        name: 'src',
+                        message: 'type the template source folder:',
+                        default: './tools/template'
                     },
                     {
-                        type: "input",
-                        name: "dist",
-                        message: "type your template destination folder: ",
-                        default: "./src/page"
+                        type: 'input',
+                        name: 'dist',
+                        message: 'type your template destination folder: ',
+                        default: './src/page'
                     },
                     {
-                        type: "input",
-                        name: "npm",
-                        message: "type your npm command(npm|tnpm|cnpm etc): ",
-                        default: "npm"
+                        type: 'input',
+                        name: 'npm',
+                        message: 'type your npm command(npm|tnpm|cnpm etc): ',
+                        default: 'npm'
                     }
                 ])
                 .then(answers => {
@@ -633,8 +631,8 @@ class KitPlugin extends SteamerPlugin {
      * @param {*} localConfig
      */
     listTemplate(localConfig) {
-        let templateFolder = path.resolve(localConfig.template.src),
-            templateInfo = this.fs.readdirSync(templateFolder);
+        let templateFolder = path.resolve(localConfig.template.src);
+        let templateInfo = this.fs.readdirSync(templateFolder);
 
         templateInfo = templateInfo.filter(item => {
             return this.fs
@@ -645,34 +643,34 @@ class KitPlugin extends SteamerPlugin {
         inquirer
             .prompt([
                 {
-                    type: "list",
-                    name: "template",
-                    message: "which template do you like: ",
+                    type: 'list',
+                    name: 'template',
+                    message: 'which template do you like: ',
                     choices: templateInfo
                 },
                 {
-                    type: "input",
-                    name: "path",
-                    message: "type in your page name: "
+                    type: 'input',
+                    name: 'path',
+                    message: 'type in your page name: '
                 }
             ])
             .then(answers => {
                 if (!answers.path) {
-                    return this.error("Please type in your page name.");
+                    return this.error('Please type in your page name.');
                 }
 
                 let targetFolder = path.resolve(
                     localConfig.template.dist,
                     answers.path
-                ),
-                    srcFolder = path.resolve(
-                        localConfig.template.src,
-                        answers.template
-                    );
+                );
+                let srcFolder = path.resolve(
+                    localConfig.template.src,
+                    answers.template
+                );
 
                 if (this.fs.existsSync(targetFolder)) {
                     return this.error(
-                        "Target folder already exist. Please change another page name."
+                        'Target folder already exist. Please change another page name.'
                     );
                 }
 
@@ -680,7 +678,7 @@ class KitPlugin extends SteamerPlugin {
 
                 this.walkAndReplace(
                     targetFolder,
-                    [".js", ".jsx", ".ts", ".tsx", ".html"],
+                    ['.js', '.jsx', '.ts', '.tsx', '.html'],
                     {
                         Title: answers.path.replace(/^[a-z]/, l =>
                             l.toUpperCase()
@@ -719,18 +717,18 @@ class KitPlugin extends SteamerPlugin {
         }
 
         files.forEach(file => {
-            let content = this.fs.readFileSync(file.path, "utf-8");
+            let content = this.fs.readFileSync(file.path, 'utf-8');
 
             Object.keys(replaceObj).forEach(key => {
                 content = content.replace(
-                    new RegExp("<% " + key + " %>", "g"),
+                    new RegExp('<% ' + key + ' %>', 'g'),
                     function (match) {
                         return replaceObj[key];
                     }
                 );
             });
 
-            this.fs.writeFileSync(file.path, content, "utf-8");
+            this.fs.writeFileSync(file.path, content, 'utf-8');
         });
     }
 
@@ -740,8 +738,8 @@ class KitPlugin extends SteamerPlugin {
      * @param {*} templateName
      * @param {*} npmCmd
      */
-    installDependency(templateFolder, templateName, npmCmd = "npm") {
-        let dependencyJson = path.join(templateFolder, "dependency.js");
+    installDependency(templateFolder, templateName, npmCmd = 'npm') {
+        let dependencyJson = path.join(templateFolder, 'dependency.js');
 
         if (!this.fs.existsSync(dependencyJson)) {
             return;
@@ -750,15 +748,15 @@ class KitPlugin extends SteamerPlugin {
         let dependencies = require(dependencyJson) || {};
         dependencies = dependencies[templateName] || {};
 
-        let cmd = "";
+        let cmd = '';
 
         Object.keys(dependencies).forEach(item => {
-            cmd += item + "@" + dependencies[item] + " ";
+            cmd += item + '@' + dependencies[item] + ' ';
         });
 
         if (cmd) {
-            this.spawn.sync(npmCmd, ["install", "--save", cmd], {
-                stdio: "inherit",
+            this.spawn.sync(npmCmd, ['install', '--save', cmd], {
+                stdio: 'inherit',
                 shell: true
             });
         }
@@ -794,7 +792,7 @@ class KitPlugin extends SteamerPlugin {
             this.fs.writeFileSync(
                 this.kitOptionsPath,
                 `module.exports = ${JSON.stringify(options, null, 4)};`,
-                "utf-8"
+                'utf-8'
             );
         }
 
@@ -818,7 +816,7 @@ class KitPlugin extends SteamerPlugin {
             this.fs.writeFileSync(
                 this.kitOptionsPath,
                 `module.exports = ${JSON.stringify(options, null, 4)};`,
-                "utf-8"
+                'utf-8'
             );
         } catch (e) {
             this.error(e.stack);
@@ -838,30 +836,32 @@ class KitPlugin extends SteamerPlugin {
     }
 
     getPkgJson(localPath) {
-        let pkgJsonPath = path.join(localPath, "package.json");
+        let pkgJsonPath = path.join(localPath, 'package.json');
         if (this.fs.existsSync(pkgJsonPath)) {
             this.delRequireCache(pkgJsonPath);
             return require(pkgJsonPath);
         } else {
-            throw new Error("package.json does not exist");
+            throw new Error('package.json does not exist');
         }
     }
 
-    getNameSpace(repo) {
-        let localPath = "";
-        if (repo.indexOf("http") >= 0) {
-            repo = url.parse(repo);
+    getNameSpace(repoParam) {
+        let localPath = '';
+        if (repoParam.indexOf('http') >= 0) {
+            let repo = url.parse(repoParam);
             if (!repo.host) {
-                return this.error("Please input correct repo url");
+                return this.error('Please input correct repo url');
             }
-            localPath = `${repo.host}${repo.pathname.replace(".git", "")}`;
-        } else if (repo.indexOf("git@") === 0) {
-            localPath = repo
-                .replace("git@", "")
-                .replace(".git", "")
-                .replace(":", "/");
-        } else if (typeof this.kitOptions.list[repo] !== "undefined") {
-            localPath = this.getNameSpace(this.kitOptions.list[repo].url);
+            localPath = `${repo.host}${repo.pathname.replace('.git', '')}`;
+        }
+        else if (repoParam.indexOf('git@') === 0) {
+            localPath = repoParam
+                .replace('git@', '')
+                .replace('.git', '')
+                .replace(':', '/');
+        }
+        else if (typeof this.kitOptions.list[repoParam] !== 'undefined') {
+            localPath = this.getNameSpace(this.kitOptions.list[repoParam].url);
         }
 
         return localPath;
@@ -869,14 +869,14 @@ class KitPlugin extends SteamerPlugin {
 
     getKitName(ns) {
         let kit = null;
-        if (ns.split("/").length === 3) {
-            kit = ns.split("/")[2];
+        if (ns.split('/').length === 3) {
+            kit = ns.split('/')[2];
         }
         return kit;
     }
 
     getVersion(tag) {
-        return tag.replace(/[a-zA-Z]+/gi, "");
+        return tag.replace(/[a-zA-Z]+/gi, '');
     }
 
     spinSuccess(msg) {
@@ -888,7 +888,7 @@ class KitPlugin extends SteamerPlugin {
     }
 
     list() {
-        this.log("You can use following starterkits: ");
+        this.log('You can use following starterkits: ');
         let kits = this.kitOptions.list;
         Object.keys(kits).forEach(key => {
             let kit = kits[key];
@@ -900,9 +900,9 @@ class KitPlugin extends SteamerPlugin {
     }
 
     install() {
-        let kits = this.kitOptions.list,
-            questions = [],
-            choices = [];
+        let kits = this.kitOptions.list;
+        // let questions = [];
+        let choices = [];
 
         Object.keys(kits).forEach(key => {
             choices.push({
@@ -916,39 +916,39 @@ class KitPlugin extends SteamerPlugin {
         inquirer.prompt(prompts).ui.process.subscribe(
             obj => {
                 switch (obj.name) {
-                    case "kit": {
+                    case 'kit': {
                         prompts.next({
-                            type: "list",
-                            name: "ver",
-                            message: "Which version do you need: ",
+                            type: 'list',
+                            name: 'ver',
+                            message: 'Which version do you need: ',
                             choices: kits[obj.answer].versions
                         });
                         answers.kit = obj.answer;
                         break;
                     }
-                    case "ver": {
+                    case 'ver': {
                         prompts.next({
-                            type: "text",
-                            name: "folder",
-                            default: "./",
-                            message: "Which folder is your project in: "
+                            type: 'text',
+                            name: 'folder',
+                            default: './',
+                            message: 'Which folder is your project in: '
                         });
                         answers.ver = obj.answer;
                         break;
                     }
-                    case "folder": {
+                    case 'folder': {
                         answers.folder = obj.answer.trim();
                         prompts.next({
-                            type: "text",
-                            name: "projectName",
-                            message: "type your project name:",
+                            type: 'text',
+                            name: 'projectName',
+                            message: 'type your project name:',
                             default: path.basename(answers.folder)
                         });
 
                         prompts.complete();
                         break;
                     }
-                    case "projectName":
+                    case 'projectName':
                         answers.projectName = obj.answer.trim();
                         break;
                 }
@@ -960,9 +960,9 @@ class KitPlugin extends SteamerPlugin {
         );
 
         prompts.next({
-            type: "list",
-            name: "kit",
-            message: "Which starterkit do you wanna install: ",
+            type: 'list',
+            name: 'kit',
+            message: 'Which starterkit do you wanna install: ',
             choices: choices,
             pageSize: 100
         });
@@ -980,20 +980,21 @@ class KitPlugin extends SteamerPlugin {
     installKit(options) {
         let { kit, ver, folder, projectName } = options;
 
-        let kitPath = path.join(this.kitHomePath, kit),
-            kitConfigPath = path.join(kitPath, `.steamer/${kit}.js`),
-            kitConfig = {},
-            isSteamerKit = false,
-            folderPath = path.join(process.cwd(), folder),
-            kitQuestions = [],
-            files = [];
+        let kitPath = path.join(this.kitHomePath, kit);
+        let kitConfigPath = path.join(kitPath, `.steamer/${kit}.js`);
+        let kitConfig = {};
+        let isSteamerKit = false;
+        let folderPath = path.join(process.cwd(), folder);
+        let kitQuestions = [];
+        let files = [];
 
         this.git(kitPath).checkout(ver, () => {
             // 查看是否能获取steamer规范的脚手架配置
             if (this.fs.existsSync(kitConfigPath)) {
                 kitConfig = this.readKitConfig(kitConfigPath);
                 files = new Set(kitConfig.installFiles || kitConfig.files);
-                files.add("package.json"), (kitQuestions = kitConfig.options);
+                files.add('package.json');
+                kitQuestions = kitConfig.options;
                 isSteamerKit = true;
             }
             else {
@@ -1003,15 +1004,15 @@ class KitPlugin extends SteamerPlugin {
             // 做去重
             files = Array.from(files);
 
-            let isEmpty = this.checkEmpty(folderPath),
-                overwriteQuestion = [];
+            let isEmpty = this.checkEmpty(folderPath);
+            let overwriteQuestion = [];
 
             if (!isEmpty) {
                 overwriteQuestion.push({
-                    type: "text",
-                    name: "overwrite",
-                    message: "The foler is not empty, do you wanna overwrite?",
-                    default: "n"
+                    type: 'text',
+                    name: 'overwrite',
+                    message: 'The foler is not empty, do you wanna overwrite?',
+                    default: 'n'
                 });
             }
 
@@ -1019,8 +1020,8 @@ class KitPlugin extends SteamerPlugin {
             prompt(overwriteQuestion)
                 .then(answers => {
                     if (
-                        !answers.hasOwnProperty("overwrite") ||
-                        (answers.overwrite && answers.overwrite === "y")
+                        !answers.hasOwnProperty('overwrite') ||
+                        (answers.overwrite && answers.overwrite === 'y')
                     ) {
                         this.copyFiles({
                             files,
@@ -1059,9 +1060,9 @@ class KitPlugin extends SteamerPlugin {
         // 脚手架相关配置问题
         let prompt = inquirer.createPromptModule();
         prompt(kitQuestions)
-            .then(answers => {
+            .then((answersParam) => {
 
-                answers = Object.assign({}, answers, {
+                let answers = Object.assign({}, answersParam, {
                     projectName
                 });
 
@@ -1075,8 +1076,8 @@ class KitPlugin extends SteamerPlugin {
                 });
 
                 files.forEach(item => {
-                    let srcFiles = path.join(kitPath, item),
-                        destFile = path.join(folderPath, item);
+                    let srcFiles = path.join(kitPath, item);
+                    let destFile = path.join(folderPath, item);
 
                     if (this.fs.existsSync(srcFiles)) {
                         this.fs.copySync(srcFiles, destFile);
@@ -1085,11 +1086,11 @@ class KitPlugin extends SteamerPlugin {
 
                 if (answers.webserver) {
                     this.fs.ensureFileSync(
-                        path.join(folderPath, "config/steamer.config.js")
+                        path.join(folderPath, 'config/steamer.config.js')
                     );
                     this.fs.writeFileSync(
-                        path.join(folderPath, "config/steamer.config.js"),
-                        "module.exports = " + JSON.stringify(answers, null, 4)
+                        path.join(folderPath, 'config/steamer.config.js'),
+                        'module.exports = ' + JSON.stringify(answers, null, 4)
                     );
                 }
 
@@ -1109,15 +1110,15 @@ class KitPlugin extends SteamerPlugin {
                 }
 
                 // 替换项目名称
-                if (!!projectName) {
+                if (projectName) {
                     const oldPkgJson = this.getPkgJson(folderPath);
                     let pkgJson = _.merge({}, oldPkgJson, {
                         name: projectName
                     });
                     this.fs.writeFileSync(
-                        path.join(folderPath, "package.json"),
+                        path.join(folderPath, 'package.json'),
                         JSON.stringify(pkgJson, null, 4),
-                        "utf-8"
+                        'utf-8'
                     );
                 }
                 // beforeInstall 自定义行为
@@ -1126,8 +1127,8 @@ class KitPlugin extends SteamerPlugin {
                 }
 
                 // 安装项目node_modules包
-                this.spawn.sync(this.config.NPM, ["install"], {
-                    stdio: "inherit",
+                this.spawn.sync(this.config.NPM, ['install'], {
+                    stdio: 'inherit',
                     cwd: folderPath
                 });
 
@@ -1182,31 +1183,31 @@ class KitPlugin extends SteamerPlugin {
      * [help]
      */
     help() {
-        this.printUsage(this.description, "kit");
+        this.printUsage(this.description, 'kit');
         this.printOption([
             {
-                option: "list",
-                alias: "l",
-                description: "list all available starter kits"
+                option: 'list',
+                alias: 'l',
+                description: 'list all available starter kits'
             },
             {
-                option: "add",
-                alias: "i",
+                option: 'add',
+                alias: 'i',
                 value:
-                    "[<git repo>|<git repo> --tag <tag name>|--alias <starterkit name>]",
-                description: "install starter kit"
+                    '[<git repo>|<git repo> --tag <tag name>|--alias <starterkit name>]',
+                description: 'install starter kit'
             },
             {
-                option: "update",
-                alias: "u",
-                value: "[--global]",
+                option: 'update',
+                alias: 'u',
+                value: '[--global]',
                 description:
-                    "update starter kit for project or update global starterkit"
+                    'update starter kit for project or update global starterkit'
             },
             {
-                option: "remove",
-                value: "<starterkit name>",
-                description: "remove starterkit"
+                option: 'remove',
+                value: '<starterkit name>',
+                description: 'remove starterkit'
             }
         ]);
     }
