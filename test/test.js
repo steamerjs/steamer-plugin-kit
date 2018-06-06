@@ -667,6 +667,8 @@ describe('update', function () {
         fs.copySync(path.join(process.cwd(), TEST, 'kit/steamer-example1'), path.join(PROJECT, 'steamer-project2'));
         process.chdir(path.join(PROJECT, 'steamer-project2'));
 
+        let spawnSyncStub = sinon.stub(kit.spawn, 'sync');
+
         let kitGitStub = sinon.stub(kit, 'git').callsFake(function (localPath) {
             let fakeGit = {
                 silent: (isSilent) => {
@@ -675,9 +677,19 @@ describe('update', function () {
                 checkout: (version, cb) => {
                     cb && cb();
                     process.chdir(CUR_ENV);
+
+                    let pkgPath = path.join(PROJECT, 'steamer-project2/.steamer/steamer-plugin-kit.js');
+                    kit.delRequireCache(pkgPath);
+                    let pkg = require(pkgPath);
+
+                    expect(version).to.be(pkg.config.version);
+
+                    let args = spawnSyncStub.args[0];
+                    expect(args[0]).to.be('npm');
+                    expect(args[1]).to.eql(['install']);
+
+                    spawnSyncStub.restore();
                     done();
-                    let pkg = require(path.join(PROJECT, 'steamer-project2/package.json'));
-                    expect(version).to.be(pkg.version);
                     return fakeGit;
                 }
             };
