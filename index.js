@@ -897,21 +897,31 @@ class KitPlugin extends SteamerPlugin {
             );
         }
 
-        this.fs.symlinkSync(path.join(curPath), path.join(kitHomePath, kitName));
+        this.git()
+            .silent(true)
+            .branch([ver], (err) => {
+                let errMsg = `already exists.`;
+                if (err.includes(errMsg)) {
+                    this.fs.symlinkSync(path.join(curPath), path.join(kitHomePath, kitName));
 
-        // init starterkit config
-        kitOptions.list[kitName] = {
-            url: null,
-            path: linkPath,
-            description: packageJson.description,
-            versions: [ver],
-            currentVersion: ver,
-            latestVersion: ver
-        };
+                    // init starterkit config
+                    kitOptions.list[kitName] = {
+                        url: null,
+                        path: linkPath,
+                        description: packageJson.description,
+                        versions: [ver],
+                        currentVersion: ver,
+                        latestVersion: ver
+                    };
 
-        this.writeKitOptions(kitOptions);
+                    this.writeKitOptions(kitOptions);
 
-        this.success(`${kitName}@${ver} installed.`);
+                    this.success(`${kitName}@${ver} installed.`);
+                }
+                else {
+                    this.error(err);
+                }
+            });
     }
 
     install() {

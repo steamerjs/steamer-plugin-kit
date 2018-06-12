@@ -866,34 +866,51 @@ describe('develop', () => {
         kit.writeKitOptions(kitOptions); // reset starterkit.js
         kit.kitOptions = kitOptions;
 
-        let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
-            expect(src).to.eql(path.join(KIT, 'steamer-example5'));
-            expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/steamer-example5'));
-        });
-        let kitWriteKitOptions = sinon.stub(kit, 'writeKitOptions').callsFake((kitOptions) => {
-            expect(kitOptions).to.eql({
-                list: {
-                    'steamer-example5': {
-                        url: null,
-                        path: path.join(KIT, '../.steamer/starterkits/steamer-example5'),
-                        description: 'steamer starter kit example',
-                        versions: ['1.0.0'],
-                        currentVersion: '1.0.0',
-                        latestVersion: '1.0.0'
-                    }
+        let kitGitStub = sinon.stub(kit, 'git').callsFake(function () {
+            let fakeGit = {
+                silent: (isSilent) => {
+                    return fakeGit;
+                },
+                branch: () => {
+                    let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
+                        expect(src).to.eql(path.join(KIT, 'steamer-example5'));
+                        expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/steamer-example5'));
+                    });
+                    let kitWriteKitOptions = sinon.stub(kit, 'writeKitOptions').callsFake((kitOptions) => {
+                        expect(kitOptions).to.eql({
+                            list: {
+                                'steamer-example5': {
+                                    url: null,
+                                    path: path.join(KIT, '../.steamer/starterkits/steamer-example5'),
+                                    description: 'steamer starter kit example',
+                                    versions: ['1.0.0'],
+                                    currentVersion: '1.0.0',
+                                    latestVersion: '1.0.0'
+                                }
+                            }
+                        });
+                    });
+                    let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
+                        expect(msg).to.eql('steamer-example5@1.0.0 installed.');
+                    });
+
+                    kitFsStub.restore();
+                    kitWriteKitOptions.restore();
+                    kitSuccessStub.restore();
+
+                    kitGitStub.restore();
+
+                    process.chdir(CUR_ENV);
+
+                    return fakeGit;
                 }
-            });
-        });
-        let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
-            expect(msg).to.eql('steamer-example5@1.0.0 installed.');
+            };
+            return fakeGit;
         });
 
         kit.init();
 
-        kitFsStub.restore();
-        kitWriteKitOptions.restore();
-        kitSuccessStub.restore();
-        process.chdir(CUR_ENV);
+
     });
 
     it('add starterkit with alias', () => {
@@ -912,33 +929,48 @@ describe('develop', () => {
         kit.writeKitOptions(kitOptions); // reset starterkit.js
         kit.kitOptions = kitOptions;
 
-        let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
-            expect(src).to.eql(path.join(KIT, 'steamer-example5'));
-            expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/library'));
-        });
-        let kitWriteKitOptions = sinon.stub(kit, 'writeKitOptions').callsFake((kitOptions) => {
-            expect(kitOptions).to.eql({
-                list: {
-                    'library': {
-                        url: null,
-                        path: path.join(KIT, '../.steamer/starterkits/library'),
-                        description: 'steamer starter kit example',
-                        versions: ['1.0.0'],
-                        currentVersion: '1.0.0',
-                        latestVersion: '1.0.0'
-                    }
+        let kitGitStub = sinon.stub(kit, 'git').callsFake(function () {
+            let fakeGit = {
+                silent: (isSilent) => {
+                    return fakeGit;
+                },
+                branch: () => {
+
+                    let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
+                        expect(src).to.eql(path.join(KIT, 'steamer-example5'));
+                        expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/library'));
+                    });
+                    let kitWriteKitOptions = sinon.stub(kit, 'writeKitOptions').callsFake((kitOptions) => {
+                        expect(kitOptions).to.eql({
+                            list: {
+                                'library': {
+                                    url: null,
+                                    path: path.join(KIT, '../.steamer/starterkits/library'),
+                                    description: 'steamer starter kit example',
+                                    versions: ['1.0.0'],
+                                    currentVersion: '1.0.0',
+                                    latestVersion: '1.0.0'
+                                }
+                            }
+                        });
+                    });
+                    let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
+                        expect(msg).to.eql('library@1.0.0 installed.');
+                    });
+
+                    kitFsStub.restore();
+                    kitWriteKitOptions.restore();
+                    kitSuccessStub.restore();
+
+                    kitGitStub.restore();
+                    return fakeGit;
                 }
-            });
-        });
-        let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
-            expect(msg).to.eql('library@1.0.0 installed.');
+            };
+            return fakeGit;
         });
 
         kit.init();
 
-        kitFsStub.restore();
-        kitWriteKitOptions.restore();
-        kitSuccessStub.restore();
         process.chdir(CUR_ENV);
     });
 
