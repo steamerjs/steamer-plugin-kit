@@ -208,3 +208,19 @@ steamer develop -k [kit name]
 * vue 组件开发 starter kit: [steamer-vue-component](https://github.com/steamerjs/steamer-vue-component/)
 * 无框架 组件开发 starter kit: [steamer-simple-component](https://github.com/steamerjs/steamer-simple-component/)
 * 小工具开发 starter kit: [steamer-logic-component](https://github.com/steamerjs/steamer-logic-component)
+
+## 开发脚手架
+在使用 `steamer develop -k [kit name]` 初始脚手架并开发了一定程序之外，若要在本地测试，可使用以下命令：
+
+```javascript
+cd [starterkit path]
+
+steamer kit --develop
+// or
+steamer kit -d
+
+// 如果想用别名，则用
+steamer kit --develop [alias name]
+// or
+steamer kit -d [alias name]
+```
