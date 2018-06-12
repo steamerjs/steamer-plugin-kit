@@ -1,6 +1,6 @@
 {
   "name": "steamer-plugin-kit",
-  "version": "3.0.0-beta.11",
+  "version": "3.0.0-beta.12",
   "description": "steamer-plugin-kit",
   "main": "index.js",
   "bin": "index.js",
@@ -33,7 +33,7 @@
     "lodash": "^4.17.10",
     "ora": "^2.1.0",
     "rxjs": "^5.5.2",
-    "simple-git": "^1.95.0",
+    "simple-git": "^1.95.1",
     "steamer-plugin": "^1.0.4"
   },
   "devDependencies": {
@@ -47,7 +47,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "mocha-lcov-reporter": "^1.3.0",
-    "sinon": "^5.0.10"
+    "sinon": "^5.1.0"
   },
   "engines": {
     "node": ">=6.4.0"

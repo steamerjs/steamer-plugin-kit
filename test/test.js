@@ -1,32 +1,21 @@
-"use strict";
-
 const path = require('path');
-const os = require('os');
 const fs = require('fs-extra');
-const chalk = require('chalk');
 const bluebird = require('bluebird');
 const expect = require('expect.js');
 const sinon = require('sinon');
-const compareVersions = require('compare-versions');
-const cp = require('child_process');
-const spawnSync = cp.spawnSync;
 const SteamerKit = require('../index');
-
-var nodeVer = process.version.replace('V', '').replace('v', ''),
-    isNode8 = compareVersions(nodeVer, '8.0.0') > -1;
+const {
+    delRequireCache,
+    getNameSpace,
+    checkEmpty
+} = require('../utils/kit');
 
 const CUR_ENV = process.cwd();
-const TEST = "test";
-const PROJECT = path.join(process.cwd(), TEST, "project");
-const KIT = path.join(process.cwd(), TEST, "kit");
+const TEST = 'test';
+const PROJECT = path.join(process.cwd(), TEST, 'project');
+const KIT = path.join(process.cwd(), TEST, 'kit');
 const kitHomePath = path.join(process.cwd(), TEST, '.steamer/starterkits');
 const kitOptionsPath = path.join(kitHomePath, 'starterkits.js');
-
-function linkKit(kitName, cmd) {
-    process.chdir(KIT);
-    process.chdir(kitName);
-    spawnSync("npm", [cmd], { stdio: "inherit" });
-}
 
 function userInput(key, val, order) {
     setTimeout(function () {
@@ -41,7 +30,7 @@ function userInputEnd(cb, order) {
 }
 
 function trimString(str) {
-    return str.replace(/(\r\n|\n|\r)/gm, "");
+    return str.replace(/(\r\n|\n|\r)/gm, '');
 }
 
 
@@ -108,7 +97,7 @@ describe('add starterkit', function () {
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {} };
+        let kitOptions = { list: {}};
         kitOptions.list['steamer-example1'] = {
             url: repoUrl,
             path: path.join(kitHomePath, 'steamer-example1'),
@@ -119,14 +108,14 @@ describe('add starterkit', function () {
         };
         kitOptions.timestamp = now;
 
-        let kitGetKitOptionsStub = sinon.stub(kit, "getKitOptions").callsFake(function () {
+        let kitGetKitOptionsStub = sinon.stub(kit, 'getKitOptions').callsFake(function () {
             if (!fs.existsSync(kitOptionsPath)) {
                 fs.ensureFileSync(kitOptionsPath);
             }
 
             return kitOptions;
         });
-        let kitStub = sinon.stub(kit, "clone").usingPromise(bluebird.Promise).resolves().callsFake(function () {
+        let kitStub = sinon.stub(kit, 'clone').usingPromise(bluebird.Promise).resolves().callsFake(function () {
             return Promise.resolve();
         });
 
@@ -142,16 +131,16 @@ describe('add starterkit', function () {
 
     it('add startkit - clone without tag', function () {
         let repoUrl = 'https://github.com/steamerjs/steamer-example1.git';
-        let now = Date.now();
+        // let now = Date.now();
         let kit = new SteamerKit({
             add: repoUrl
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {} };
+        let kitOptions = { list: {}};
         kit.writeKitOptions(kitOptions); // reset starterkit.js
 
-        let kitCloneLatest = sinon.stub(kit, "cloneLatest").usingPromise(bluebird.Promise).resolves();
+        let kitCloneLatest = sinon.stub(kit, 'cloneLatest').usingPromise(bluebird.Promise).resolves();
 
         kit.clone(repoUrl, null, null).then(() => {
 
@@ -169,16 +158,16 @@ describe('add starterkit', function () {
 
     it('add startkit - clone with tag', function () {
         let repoUrl = 'https://github.com/steamerjs/steamer-example1.git';
-        let now = Date.now();
+        // let now = Date.now();
         let kit = new SteamerKit({
             add: repoUrl
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {} };
+        let kitOptions = { list: {}};
         kit.writeKitOptions(kitOptions); // reset starterkit.js
 
-        let kitCloneTag = sinon.stub(kit, "cloneTag").usingPromise(bluebird.Promise).resolves();
+        let kitCloneTag = sinon.stub(kit, 'cloneTag').usingPromise(bluebird.Promise).resolves();
 
         kit.clone(repoUrl, '1.0.0', null).then(() => {
 
@@ -197,13 +186,13 @@ describe('add starterkit', function () {
     it('add startkit - cloneLatest', function () {
         let repoUrl = 'https://github.com/steamerjs/steamer-example1.git';
         let localPath = path.join(kitHomePath, 'steamer-example1');
-        let now = Date.now();
+        // let now = Date.now();
         let kit = new SteamerKit({
             add: repoUrl
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {} };
+        let kitOptions = { list: {}};
         kit.writeKitOptions(kitOptions); // reset starterkit.js
         kit.kitOptions = kit.getKitOptions(); // re-getKitOptions
 
@@ -279,13 +268,13 @@ describe('add starterkit', function () {
     it('add startkit - cloneTag', function () {
         let repoUrl = 'https://github.com/steamerjs/steamer-example2.git';
         let localPath = path.join(kitHomePath, 'steamer-example2');
-        let now = Date.now();
+        // let now = Date.now();
         let kit = new SteamerKit({
             add: repoUrl
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {} };
+        let kitOptions = { list: {}};
         kit.writeKitOptions(kitOptions); // reset starterkit.js
         kit.kitOptions = kit.getKitOptions(); // re-getKitOptions
         kit.kitOptions.list['steamer-example2'] = {
@@ -372,15 +361,15 @@ describe('install starterkit', function () {
         kit.kitOptionsPath = kitOptionsPath;
         let kitOptions = {
             list: {
-                "steamer-example1": {
-                    "url": repoUrl,
-                    "path": path.join(process.cwd(), TEST, ".steamer/starterkits/steamer-example1"),
-                    "versions": [
-                        "2.0.0"
+                'steamer-example1': {
+                    'url': repoUrl,
+                    'path': path.join(process.cwd(), TEST, '.steamer/starterkits/steamer-example1'),
+                    'versions': [
+                        '2.0.0'
                     ],
-                    "description": "steamer starter kit example\"",
-                    "currentVersion": "2.0.0",
-                    "latestVersion": "2.0.0"
+                    'description': 'steamer starter kit example"',
+                    'currentVersion': '2.0.0',
+                    'latestVersion': '2.0.0'
                 }
             }
         };
@@ -439,15 +428,15 @@ describe('update', function () {
         kit.kitOptionsPath = kitOptionsPath;
         let kitOptions = {
             list: {
-                "steamer-example1": {
-                    "url": repoUrl,
-                    "path": path.join(process.cwd(), TEST, ".steamer/starterkits/steamer-example1"),
-                    "versions": [
-                        "2.0.0"
+                'steamer-example1': {
+                    'url': repoUrl,
+                    'path': path.join(process.cwd(), TEST, '.steamer/starterkits/steamer-example1'),
+                    'versions': [
+                        '2.0.0'
                     ],
-                    "description": "steamer starter kit example\"",
-                    "currentVersion": "2.0.0",
-                    "latestVersion": "2.0.0"
+                    'description': 'steamer starter kit example"',
+                    'currentVersion': '2.0.0',
+                    'latestVersion': '2.0.0'
                 }
             }
         };
@@ -482,15 +471,15 @@ describe('update', function () {
         kit.kitOptionsPath = kitOptionsPath;
         let kitOptions = {
             list: {
-                "steamer-example3": {
-                    "url": repoUrl,
-                    "path": path.join(process.cwd(), TEST, ".steamer/starterkits/steamer-example3"),
-                    "versions": [
-                        "2.0.0"
+                'steamer-example3': {
+                    'url': repoUrl,
+                    'path': path.join(process.cwd(), TEST, '.steamer/starterkits/steamer-example3'),
+                    'versions': [
+                        '2.0.0'
                     ],
-                    "description": "steamer starter kit example\"",
-                    "currentVersion": "2.0.0",
-                    "latestVersion": "2.0.0"
+                    'description': 'steamer starter kit example"',
+                    'currentVersion': '2.0.0',
+                    'latestVersion': '2.0.0'
                 }
             }
         };
@@ -566,15 +555,15 @@ describe('update', function () {
         kit.kitOptionsPath = kitOptionsPath;
         let kitOptions = {
             list: {
-                "steamer-example4": {
-                    "url": repoUrl,
-                    "path": path.join(process.cwd(), TEST, ".steamer/starterkits/steamer-example4"),
-                    "versions": [
-                        "2.0.0"
+                'steamer-example4': {
+                    'url': repoUrl,
+                    'path': path.join(process.cwd(), TEST, '.steamer/starterkits/steamer-example4'),
+                    'versions': [
+                        '2.0.0'
                     ],
-                    "description": "steamer starter kit example\"",
-                    "currentVersion": "2.0.0",
-                    "latestVersion": "2.0.0"
+                    'description': 'steamer starter kit example"',
+                    'currentVersion': '2.0.0',
+                    'latestVersion': '2.0.0'
                 }
             }
         };
@@ -648,15 +637,15 @@ describe('update', function () {
         kit.kitOptionsPath = kitOptionsPath;
         let kitOptions = {
             list: {
-                "steamer-example1": {
-                    "url": repoUrl,
-                    "path": path.join(process.cwd(), TEST, ".steamer/starterkits/steamer-example1"),
-                    "versions": [
-                        "3.0.0"
+                'steamer-example1': {
+                    'url': repoUrl,
+                    'path': path.join(process.cwd(), TEST, '.steamer/starterkits/steamer-example1'),
+                    'versions': [
+                        '3.0.0'
                     ],
-                    "description": "steamer starter kit example\"",
-                    "currentVersion": "3.0.0",
-                    "latestVersion": "3.0.0"
+                    'description': 'steamer starter kit example"',
+                    'currentVersion': '3.0.0',
+                    'latestVersion': '3.0.0'
                 }
             }
         };
@@ -679,7 +668,7 @@ describe('update', function () {
                     process.chdir(CUR_ENV);
 
                     let pkgPath = path.join(PROJECT, 'steamer-project2/.steamer/steamer-plugin-kit.js');
-                    kit.delRequireCache(pkgPath);
+                    delRequireCache.bind(kit)(pkgPath);
                     let pkg = require(pkgPath);
 
                     expect(version).to.be(pkg.config.version);
@@ -688,6 +677,7 @@ describe('update', function () {
                     expect(args[0]).to.be('npm');
                     expect(args[1]).to.eql(['install']);
 
+                    kitGitStub.restore();
                     spawnSyncStub.restore();
                     done();
                     return fakeGit;
@@ -711,15 +701,15 @@ describe('remove', function () {
         kit.kitOptionsPath = kitOptionsPath;
         let kitOptions = {
             list: {
-                "steamer-example5": {
-                    "url": repoUrl,
-                    "path": path.join(process.cwd(), TEST, ".steamer/starterkits/steamer-example5"),
-                    "versions": [
-                        "2.0.0"
+                'steamer-example5': {
+                    'url': repoUrl,
+                    'path': path.join(process.cwd(), TEST, '.steamer/starterkits/steamer-example5'),
+                    'versions': [
+                        '2.0.0'
                     ],
-                    "description": "steamer starter kit example\"",
-                    "currentVersion": "2.0.0",
-                    "latestVersion": "2.0.0"
+                    'description': 'steamer starter kit example"',
+                    'currentVersion': '2.0.0',
+                    'latestVersion': '2.0.0'
                 }
             }
         };
@@ -742,8 +732,8 @@ describe('util', function () {
 
         });
 
-        expect(kit.checkEmpty(process.cwd())).to.be(false);
-        expect(kit.checkEmpty(path.join(PROJECT, 'steamer-project'))).to.be(true);
+        expect(checkEmpty(process.cwd(), kit.ignoreFiles)).to.be(false);
+        expect(checkEmpty(path.join(PROJECT, 'steamer-project'), kit.ignoreFiles)).to.be(true);
     });
 
     it('getNameSpace', function () {
@@ -751,7 +741,7 @@ describe('util', function () {
 
         });
 
-        expect(kit.getNameSpace('https://github.com/steamerjs/steamer-react.git')).to.be(kit.getNameSpace('git@github.com:steamerjs/steamer-react.git'));
+        expect(getNameSpace.bind(kit)('https://github.com/steamerjs/steamer-react.git')).to.be(getNameSpace.bind(kit)('git@github.com:steamerjs/steamer-react.git'));
     });
 
     it('getKitOptions', function () {
@@ -769,7 +759,7 @@ describe('util', function () {
     });
 });
 
-describe("install template", function () {
+describe('install template', function () {
 
     let project3 = path.join(PROJECT, 'steamer-project3');
 
@@ -782,37 +772,37 @@ describe("install template", function () {
         process.chdir(CUR_ENV);
     });
 
-    it("install template", function (done) {
+    it('install template', function (done) {
 
         this.timeout(10000);
 
 
-        var kit = new SteamerKit({
+        let kit = new SteamerKit({
             t: true,
         });
         kit.init();
 
-        userInput("data", "\n", 1);
-        userInput("data", "\n", 2);
-        userInput("data", "npm\n", 3);
-        userInput("data", "\n", 4);
-        userInput("data", "detail\n", 5);
+        userInput('data', '\n', 1);
+        userInput('data', '\n', 2);
+        userInput('data', 'npm\n', 3);
+        userInput('data', '\n', 4);
+        userInput('data', 'detail\n', 5);
 
         userInputEnd(function () {
-            let folderInfo = fs.readdirSync(path.resolve("src/page/detail"));
+            let folderInfo = fs.readdirSync(path.resolve('src/page/detail'));
             expect(folderInfo).to.eql([
                 'index.css',
                 'index.html',
                 'index.js'
             ]);
 
-            let jsResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/detail.js"), "utf-8")),
-                jsContent = trimString(fs.readFileSync(path.resolve("src/page/detail/index.js"), "utf-8"));
+            let jsResultContent = trimString(fs.readFileSync(path.join(KIT, 'result/template/detail.js'), 'utf-8'));
+            let jsContent = trimString(fs.readFileSync(path.resolve('src/page/detail/index.js'), 'utf-8'));
 
             expect(jsResultContent).to.eql(jsContent);
 
-            let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/detail.html"), "utf-8")),
-                htmlContent = trimString(fs.readFileSync(path.resolve("src/page/detail/index.html"), "utf-8"));
+            let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, 'result/template/detail.html'), 'utf-8'));
+            let htmlContent = trimString(fs.readFileSync(path.resolve('src/page/detail/index.html'), 'utf-8'));
 
             expect(htmlResultContent).to.eql(htmlContent);
 
@@ -821,39 +811,135 @@ describe("install template", function () {
 
     });
 
-    it("install template with template config", function (done) {
+    it('install template with template config', function (done) {
 
         this.timeout(10000);
 
-        var kit = new SteamerKit({
+        let kit = new SteamerKit({
             template: true,
         });
         kit.init();
 
-        userInput("data", "\n", 1);
-        userInput("data", "comment\n", 2);
+        userInput('data', '\n', 1);
+        userInput('data', 'comment\n', 2);
 
         userInputEnd(function () {
-            let folderInfo = fs.readdirSync(path.resolve("src/page/comment"));
+            let folderInfo = fs.readdirSync(path.resolve('src/page/comment'));
             expect(folderInfo).to.eql([
                 'index.css',
                 'index.html',
                 'index.js'
             ]);
 
-            let jsResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/comment.js"), "utf-8")),
-                jsContent = trimString(fs.readFileSync(path.resolve("src/page/comment/index.js"), "utf-8"));
+            let jsResultContent = trimString(fs.readFileSync(path.join(KIT, 'result/template/comment.js'), 'utf-8'));
+            let jsContent = trimString(fs.readFileSync(path.resolve('src/page/comment/index.js'), 'utf-8'));
 
             expect(jsResultContent).to.eql(jsContent);
 
-            let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, "result/template/comment.html"), "utf-8")),
-                htmlContent = trimString(fs.readFileSync(path.resolve("src/page/comment/index.html"), "utf-8"));
+            let htmlResultContent = trimString(fs.readFileSync(path.join(KIT, 'result/template/comment.html'), 'utf-8'));
+            let htmlContent = trimString(fs.readFileSync(path.resolve('src/page/comment/index.html'), 'utf-8'));
 
             expect(htmlResultContent).to.eql(htmlContent);
 
             done();
         }, 3);
 
+    });
+
+});
+
+describe('develop', () => {
+
+    it('add starterkit', () => {
+
+        process.chdir(path.join(KIT, 'steamer-example5'));
+
+        let kit = new SteamerKit({
+            develop: true,
+        });
+
+        kit.kitHomePath = kitHomePath;
+        kit.kitOptionsPath = kitOptionsPath;
+        let kitOptions = {
+            list: {}
+        };
+        kit.writeKitOptions(kitOptions); // reset starterkit.js
+        kit.kitOptions = kitOptions;
+
+        let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
+            expect(src).to.eql(path.join(KIT, 'steamer-example5'));
+            expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/steamer-example5'));
+        });
+        let kitWriteKitOptions = sinon.stub(kit, 'writeKitOptions').callsFake((kitOptions) => {
+            expect(kitOptions).to.eql({
+                list: {
+                    'steamer-example5': {
+                        url: null,
+                        path: path.join(KIT, '../.steamer/starterkits/steamer-example5'),
+                        description: 'steamer starter kit example',
+                        versions: ['1.0.0'],
+                        currentVersion: '1.0.0',
+                        latestVersion: '1.0.0'
+                    }
+                }
+            });
+        });
+        let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
+            expect(msg).to.eql('steamer-example5@1.0.0 installed.');
+        });
+
+        kit.init();
+
+        kitFsStub.restore();
+        kitWriteKitOptions.restore();
+        kitSuccessStub.restore();
+        process.chdir(CUR_ENV);
+    });
+
+    it('add starterkit with alias', () => {
+
+        process.chdir(path.join(KIT, 'steamer-example5'));
+
+        let kit = new SteamerKit({
+            develop: 'library',
+        });
+
+        kit.kitHomePath = kitHomePath;
+        kit.kitOptionsPath = kitOptionsPath;
+        let kitOptions = {
+            list: {}
+        };
+        kit.writeKitOptions(kitOptions); // reset starterkit.js
+        kit.kitOptions = kitOptions;
+
+        let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
+            expect(src).to.eql(path.join(KIT, 'steamer-example5'));
+            expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/library'));
+        });
+        let kitWriteKitOptions = sinon.stub(kit, 'writeKitOptions').callsFake((kitOptions) => {
+            expect(kitOptions).to.eql({
+                list: {
+                    'library': {
+                        url: null,
+                        path: path.join(KIT, '../.steamer/starterkits/library'),
+                        description: 'steamer starter kit example',
+                        versions: ['1.0.0'],
+                        currentVersion: '1.0.0',
+                        latestVersion: '1.0.0'
+                    }
+                }
+            });
+        });
+        let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
+            expect(msg).to.eql('library@1.0.0 installed.');
+        });
+
+        kit.init();
+
+        kitFsStub.restore();
+        kitWriteKitOptions.restore();
+        kitSuccessStub.restore();
+        process.chdir(CUR_ENV);
     });
 
 });

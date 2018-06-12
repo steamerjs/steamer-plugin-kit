@@ -1,0 +1,35 @@
+{
+  "name": "steamer-example5",
+  "version": "1.0.0",
+  "description": "steamer starter kit example",
+  "main": "./.steamer/steamer-example5.js",
+  "scripts": {
+    "start": "node ./tools/scrpit.js --mode=development",
+    "dist": "node ./tools/script.js --mode=production",
+    "test": "",
+    "lint": "",
+    "tpl": "node ./tools/template.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/steamerjs/steamer-example.git"
+  },
+  "keywords": [
+    "steamer starterkit",
+    "steamer",
+    "starter kit",
+    "boilerplate"
+  ],
+  "author": "steamerjs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/steamerjs/steamer-example/issues"
+  },
+  "homepage": "https://github.com/steamerjs/steamer-example#readme",
+  "dependencies": {},
+  "devDependencies": {},
+  "peerDependencies": {},
+  "engines": {
+    "node": ">=5.0.0"
+  }
+}
