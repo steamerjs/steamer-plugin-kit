@@ -1,7 +1,7 @@
-const fs = require('fs-extra');
-const path = require('path');
-const url = require('url');
-const compareVer = require('compare-versions');
+const fs = require("fs-extra");
+const path = require("path");
+const url = require("url");
+const compareVer = require("compare-versions");
 
 /**
  * delete require cache from filePath
@@ -20,21 +20,19 @@ exports.delRequireCache = delRequireCache;
  * @param {String} repoParam repo url
  */
 let getNameSpace = function(repoParam) {
-    let localPath = '';
-    if (repoParam.indexOf('http') >= 0) {
+    let localPath = "";
+    if (repoParam.indexOf("http") >= 0) {
         let repo = url.parse(repoParam);
         if (!repo.host) {
-            return this.error('Please input correct repo url');
+            return this.error("Please input correct repo url");
         }
-        localPath = `${repo.host}${repo.pathname.replace('.git', '')}`;
-    }
-    else if (repoParam.indexOf('git@') === 0) {
+        localPath = `${repo.host}${repo.pathname.replace(".git", "")}`;
+    } else if (repoParam.indexOf("git@") === 0) {
         localPath = repoParam
-            .replace('git@', '')
-            .replace('.git', '')
-            .replace(':', '/');
-    }
-    else if (typeof this.kitOptions.list[repoParam] !== 'undefined') {
+            .replace("git@", "")
+            .replace(".git", "")
+            .replace(":", "/");
+    } else if (typeof this.kitOptions.list[repoParam] !== "undefined") {
         localPath = getNameSpace(this.kitOptions.list[repoParam].url);
     }
 
@@ -48,21 +46,20 @@ exports.getNameSpace = getNameSpace;
  */
 let getKitName = function(ns) {
     let kit = null;
-    if (ns.split('/').length === 3) {
-        kit = ns.split('/')[2];
+    if (ns.split("/").length === 3) {
+        kit = ns.split("/")[2];
     }
     return kit;
 };
 exports.getKitName = getKitName;
 
 let getPkgJson = function(localPath) {
-    let pkgJsonPath = path.join(localPath, 'package.json');
+    let pkgJsonPath = path.join(localPath, "package.json");
     if (fs.existsSync(pkgJsonPath)) {
         delRequireCache.bind(this)(pkgJsonPath);
         return require(pkgJsonPath);
-    }
-    else {
-        throw new Error('package.json does not exist');
+    } else {
+        throw new Error("package.json does not exist");
     }
 };
 exports.getPkgJson = getPkgJson;
@@ -71,57 +68,57 @@ exports.getPkgJson = getPkgJson;
  * help
  */
 let help = function() {
-    this.printUsage(this.description, 'kit');
+    this.printUsage(this.description, "kit");
     this.printOption([
         {
-            option: 'list',
-            alias: 'l',
-            description: 'list all available starter kits'
+            option: "list",
+            alias: "l",
+            description: "list all available starter kits"
         },
         {
-            option: 'add',
-            alias: 'i',
+            option: "add",
+            alias: "i",
             value:
-                '[<git repo>|<git repo> --tag <tag name>|--alias <starterkit name>]',
-            description: 'install starter kit'
+                "[<git repo>|<git repo> --tag <tag name>|--alias <starterkit name>]",
+            description: "install starter kit"
         },
         {
-            option: 'develop',
-            alias: 'd',
-            description: 'develop starterkit and make it on starterkit list'
+            option: "develop",
+            alias: "d",
+            description: "develop starterkit and make it on starterkit list"
         },
         {
-            option: 'update',
-            alias: 'u',
-            value: '[--global]',
+            option: "update",
+            alias: "u",
+            value: "[--global]",
             description:
-                'update starter kit for project or update global starterkit'
+                "update starter kit for project or update global starterkit"
         },
         {
-            option: 'remove',
-            alias: 'r',
-            value: '<starterkit name>',
-            description: 'remove starterkit'
+            option: "remove",
+            alias: "r",
+            value: "<starterkit name>",
+            description: "remove starterkit"
         }
     ]);
 };
 exports.help = help;
 
 let addVersion = function(oldVers, newVer) {
-    for (let i = 0, len = oldVers.length; i < len; i++) {
-        if (compareVer(newVer, oldVers[i]) > 0) {
-            oldVers.unshift(newVer);
-            return oldVers;
-        }
+    if (!~oldVers.indexOf(newVer)) {
+        // addin if not exists
+        oldVers.push(newVer);
     }
-
-    oldVers.push(newVer);
+    // sort
+    oldVers.sort(function(a, b) {
+        return compareVer(b, a);
+    });
     return oldVers;
 };
 exports.addVersion = addVersion;
 
 let getVersion = function(tag) {
-    return tag.replace(/[a-zA-Z]+/gi, '');
+    return tag.replace(/[a-zA-Z]+/gi, "");
 };
 exports.getVersion = getVersion;
 
@@ -137,8 +134,7 @@ let checkEmpty = function(folderPath, ignoreFiles = []) {
             return !ignoreFiles.includes(item);
         });
         return !folderInfo.length;
-    }
-    else {
+    } else {
         return !fs.existsSync(folderPath);
     }
 };

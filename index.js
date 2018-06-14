@@ -322,7 +322,7 @@ class KitPlugin extends SteamerPlugin {
     updateGlobal() {
         let kits = this.kitOptions.list;
         let choices = [];
-
+        console.log('kitOptions', this.kitOptions)
         Object.keys(kits).forEach(key => {
             choices.push({
                 name: `${key} - ${kits[key].description}`,
@@ -371,6 +371,7 @@ class KitPlugin extends SteamerPlugin {
                         this.kitOptions.list[kit].currentVersion = ver;
                         this.kitOptions.list[kit].latestVersion = ver;
                     });
+                    console.log('this.kitOptions', this.kitOptions)
                     this.writeKitOptions(this.kitOptions);
                 })
                 .catch(e => {
