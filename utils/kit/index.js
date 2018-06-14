@@ -10,19 +10,18 @@ const _ = require('lodash');
  * delete require cache from filePath
  * @param {String} filePath file path
  */
-let delRequireCache = function(filePath) {
+exports.delRequireCache = function(filePath) {
     let realpath = fs.realpathSync(filePath);
     if (require.cache[realpath]) {
         delete require.cache[realpath];
     }
 };
-exports.delRequireCache = delRequireCache;
 
 /**
  * get name space from repo url for starterkit
  * @param {String} repoParam repo url
  */
-let getNameSpace = function(repoParam) {
+exports.getNameSpace = function(repoParam) {
     let localPath = '';
     if (repoParam.indexOf('http') >= 0) {
         let repo = url.parse(repoParam);
@@ -36,41 +35,38 @@ let getNameSpace = function(repoParam) {
             .replace('.git', '')
             .replace(':', '/');
     } else if (typeof this.kitOptions.list[repoParam] !== 'undefined') {
-        localPath = getNameSpace(this.kitOptions.list[repoParam].url);
+        localPath = exports.getNameSpace.bind(this)(this.kitOptions.list[repoParam].url);
     }
 
     return localPath;
 };
-exports.getNameSpace = getNameSpace;
 
 /**
  * get starterkit name from name space
  * @param {String} ns name space of starterkit
  */
-let getKitName = function(ns) {
+exports.getKitName = function(ns) {
     let kit = null;
     if (ns.split('/').length === 3) {
         kit = ns.split('/')[2];
     }
     return kit;
 };
-exports.getKitName = getKitName;
 
-let getPkgJson = function(localPath) {
+exports.getPkgJson = function(localPath) {
     let pkgJsonPath = path.join(localPath, 'package.json');
     if (fs.existsSync(pkgJsonPath)) {
-        delRequireCache.bind(this)(pkgJsonPath);
+        exports.delRequireCache.bind(this)(pkgJsonPath);
         return require(pkgJsonPath);
     } else {
         throw new Error('package.json does not exist');
     }
 };
-exports.getPkgJson = getPkgJson;
 
 /**
  * help
  */
-let help = function() {
+exports.help = function() {
     this.printUsage(this.description, 'kit');
     this.printOption([
         {
@@ -105,9 +101,8 @@ let help = function() {
         }
     ]);
 };
-exports.help = help;
 
-let addVersion = function(oldVers, newVer) {
+exports.addVersion = function(oldVers, newVer) {
     if (oldVers.indexOf(newVer) !== -1) {
         // addin if not exists
         oldVers.push(newVer);
@@ -118,18 +113,16 @@ let addVersion = function(oldVers, newVer) {
     });
     return oldVers;
 };
-exports.addVersion = addVersion;
 
-let getVersion = function(tag) {
+exports.getVersion = function(tag) {
     return tag.replace(/[a-zA-Z]+/gi, '');
 };
-exports.getVersion = getVersion;
 
 /**
  * check folder empty or not
  * @param {*} folderPath
  */
-let checkEmpty = function(folderPath, ignoreFiles = []) {
+exports.checkEmpty = function(folderPath, ignoreFiles = []) {
     // 查看目标目录是否为空
     if (path.resolve(folderPath) === process.cwd()) {
         let folderInfo = fs.readdirSync(folderPath);
@@ -141,7 +134,6 @@ let checkEmpty = function(folderPath, ignoreFiles = []) {
         return !fs.existsSync(folderPath);
     }
 };
-exports.checkEmpty = checkEmpty;
 
 /**
  * write starterkit options
@@ -180,7 +172,7 @@ exports.getKitOptions = function() {
         );
     }
 
-    delRequireCache.bind(this)(this.kitOptionsPath);
+    exports.delRequireCache.bind(this)(this.kitOptionsPath);
 
     let kitOptions = require(this.kitOptionsPath);
 
@@ -203,7 +195,7 @@ exports.spinFail = function(kitName, err = null, reject = null) {
  * @param {String} kitConfigPath
  */
 exports.readKitConfig = function(kitConfigPath) {
-    delRequireCache.bind(this)(kitConfigPath);
+    exports.delRequireCache.bind(this)(kitConfigPath);
     return require(kitConfigPath);
 };
 
@@ -321,7 +313,7 @@ function copyFiles({
 
             // 替换项目名称
             if (projectName) {
-                const oldPkgJson = getPkgJson.bind(this)(folderPath);
+                const oldPkgJson = exports.getPkgJson.bind(this)(folderPath);
                 let pkgJson = _.merge({}, oldPkgJson, {
                     name: projectName
                 });
@@ -389,7 +381,7 @@ exports.installProject = function(options, isInit = true) {
         // 做去重
         files = Array.from(files);
 
-        let isEmpty = checkEmpty.bind(this)(folderPath, this.ignoreFiles);
+        let isEmpty = exports.checkEmpty.bind(this)(folderPath, this.ignoreFiles);
         let overwriteQuestion = [];
 
         if (!isEmpty && isInit) {
