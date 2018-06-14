@@ -99,6 +99,9 @@ class KitPlugin extends SteamerPlugin {
      * @param {String} alias alias name
      */
     add(repo, tag, alias) {
+        if(repo === true) {
+            return help.bind(this)();
+        }
         this.clone(repo, tag, alias)
             .then(() => {
                 // console.log(this.kitOptions);
@@ -879,7 +882,9 @@ class KitPlugin extends SteamerPlugin {
      * @param {String} kitNameParam starterkit name
      */
     develop(kitNameParam = null) {
-
+        if(Array.isArray(kitNameParam)) {
+            return help.bind(this)();
+        }
         let kitHomePath = this.kitHomePath;
         let kitOptions = this.kitOptions;
         let curPath = process.cwd();
