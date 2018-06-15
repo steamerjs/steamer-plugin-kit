@@ -121,10 +121,10 @@ function copyFiles({
  * install or update kit to project
  */
 exports.installProject = function(options) {
-    let { kit, ver, folder, projectName } = options;
+    let { kit, kitOriginalName, ver, folder, projectName } = options;
 
     let kitPath = path.join(this.kitHomePath, kit);
-    let kitConfigPath = path.join(kitPath, `.steamer/${kit}.js`);
+    let kitConfigPath = path.join(kitPath, `.steamer/${kitOriginalName}.js`);
     let kitConfig = {};
     let isSteamerKit = false;
     let folderPath = path.join(process.cwd(), folder);
@@ -214,6 +214,7 @@ module.exports = function() {
                         choices: kits[obj.answer].versions
                     });
                     answers.kit = obj.answer;
+                    answers.kitOriginalName = kits[obj.answer].originalName || obj.answer;
                     break;
                 }
                 case 'ver': {

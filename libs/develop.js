@@ -49,6 +49,7 @@ module.exports = function(kitNameParam = null) {
 
                 // init starterkit config
                 kitOptions.list[kitName] = {
+                    originalName: packageJson.name,
                     url: null,
                     path: linkPath,
                     description: packageJson.description,
