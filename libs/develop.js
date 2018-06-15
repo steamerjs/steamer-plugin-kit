@@ -27,10 +27,14 @@ module.exports = function(kitNameParam = null) {
     let linkPath = path.join(kitHomePath, kitName);
     let ver = packageJson.version;
 
-    if (kitOptions.list.hasOwnProperty(kitName)) {
-        return this.error(
-            `${kitName} exists. Please change the name useing --alias.`
-        );
+    if (this.fs.pathExistsSync(linkPath)) {
+        if (this.fs.lstatSync(linkPath).isSymbolicLink()) {
+            this.fs.unlinkSync(linkPath);
+        } else {
+            return this.error(
+                `${kitName} exists. Please change the name useing --alias.`
+            );
+        }
     }
 
     this.git()
