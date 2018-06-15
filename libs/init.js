@@ -245,7 +245,6 @@ module.exports = function() {
         },
         () => {},
         () => {
-            console.log(answers);
             exports.installProject.bind(this)(answers);
         }
     );

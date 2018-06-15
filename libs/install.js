@@ -212,7 +212,6 @@ exports.installKit = function(repo, tag, alias) {
     }
     this.clone(repo, tag, alias)
         .then(() => {
-            // console.log(this.kitOptions);
             this.writeKitOptions(this.kitOptions);
         })
         .catch(e => {
