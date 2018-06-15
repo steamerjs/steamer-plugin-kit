@@ -219,7 +219,8 @@ exports.updateLocal = function() {
 
     let kitOptions = this.kitOptions.list[kit];
     let kitPath = kitOptions.path;
-    let kitConfigPath = path.join(kitPath, `.steamer/${kit}.js`);
+    let kitConfigFileName = kitOptions.originalName || kit;
+    let kitConfigPath = path.join(kitPath, `.steamer/${kitConfigFileName}.js`);
     let kitConfig = readKitConfig.bind(this)(kitConfigPath);
 
     if (compareVer(curVer, kitOptions.latestVersion) >= 0) {

@@ -3,7 +3,11 @@ const inquirer = require('inquirer');
 const path = require('path');
 const _ = require('lodash');
 
-const { readKitConfig, checkEmpty, createPluginConfig } = require('../utils/kit');
+const {
+    readKitConfig,
+    checkEmpty,
+    createPluginConfig
+} = require('../utils/kit');
 
 /**
  * copy starterkit files to project folder
@@ -26,13 +30,16 @@ function copyFiles({
             let answers = Object.assign({}, answersParam, {
                 projectName
             });
-
             // 复制文件前的自定义行为
             if (
                 kitConfig.beforeInstallCopy &&
                 _.isFunction(kitConfig.beforeInstallCopy)
             ) {
-                kitConfig.beforeInstallCopy.bind(this)(answers, folderPath);
+                kitConfig.beforeInstallCopy.bind(this)(
+                    answers,
+                    folderPath,
+                    files
+                );
             }
 
             let newFiles = files.filter(item => {
@@ -214,7 +221,8 @@ module.exports = function() {
                         choices: kits[obj.answer].versions
                     });
                     answers.kit = obj.answer;
-                    answers.kitOriginalName = kits[obj.answer].originalName || obj.answer;
+                    answers.kitOriginalName =
+                        kits[obj.answer].originalName || obj.answer;
                     break;
                 }
                 case 'ver': {

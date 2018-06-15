@@ -9,7 +9,8 @@ const {
     help,
     getKitOptions,
     writeKitOptions,
-    walkAndReplace
+    walkAndReplace,
+    readKitConfig
 } = require('./utils/kit');
 
 const initProject = require('./libs/init');
@@ -46,6 +47,7 @@ class KitPlugin extends SteamerPlugin {
         this.updateLocal = updateKit.updateLocal.bind(this);
         this.getPkgJson = getPkgJson.bind(this);
         this.walkAndReplace = walkAndReplace.bind(this);
+        this.readKitConfig = readKitConfig.bind(this);
 
         this.argv = args;
         this.pluginName = 'steamer-plugin-kit';
