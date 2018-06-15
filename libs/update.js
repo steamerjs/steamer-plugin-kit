@@ -230,7 +230,7 @@ exports.updateLocal = function() {
 
     pluginConfig.version = kitOptions.latestVersion; // 更新当前项目的脚手架版本
     let keepFiles = ['src', 'config', 'tools'];
-    let files = this.fs.readdirSync(kitPath);
+    let files = kitConfig.installFiles || kitConfig.files;
     files = files.filter(item => {
         return !this.ignoreFiles.includes(item);
     });
@@ -241,6 +241,7 @@ exports.updateLocal = function() {
         }
 
         let copyFiles = exports.backupFiles.bind(this)(files, keepFiles);
+
         // 复制文件前的自定义行为
         if (
             kitConfig.beforeUpdateCopy &&
