@@ -101,7 +101,7 @@ exports.help = function() {
 };
 
 exports.addVersion = function(oldVers, newVer) {
-    if (oldVers.indexOf(newVer) !== -1) {
+    if (oldVers.indexOf(newVer) === -1) {
         // addin if not exists
         oldVers.push(newVer);
     }
