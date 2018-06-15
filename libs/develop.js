@@ -40,8 +40,7 @@ module.exports = function(kitNameParam = null) {
     this.git()
         .silent(true)
         .branch([ver], err => {
-            let errMsg = `already exists.`;
-            if (err.includes(errMsg)) {
+            if (!err) {
                 this.fs.symlinkSync(
                     path.join(curPath),
                     path.join(kitHomePath, kitName)
