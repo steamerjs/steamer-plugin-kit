@@ -39,29 +39,42 @@ module.exports = function(kitNameParam = null) {
 
     this.git()
         .silent(true)
-        .branch([ver], err => {
-            if (!err) {
-                this.fs.symlinkSync(
-                    path.join(curPath),
-                    path.join(kitHomePath, kitName)
-                );
-
-                // init starterkit config
-                kitOptions.list[kitName] = {
-                    originalName: packageJson.name,
-                    url: null,
-                    path: linkPath,
-                    description: packageJson.description,
-                    versions: [ver],
-                    currentVersion: ver,
-                    latestVersion: ver
-                };
-
-                this.writeKitOptions(kitOptions);
-
-                this.success(`${kitName}@${ver} installed.`);
-            } else {
-                this.error(err);
+        .branchLocal((err, branchList) => {
+            if (err) {
+                return this.error(err);
             }
+            // 检查 branch 是否存在，不存在则创建
+            let branchVer = [];
+            if (!branchList.branches.hasOwnProperty(ver)) {
+                branchVer.push(ver);
+            }
+
+            this.git()
+                .silent()
+                .branch(branchVer, err => {
+                    if (!err) {
+                        this.fs.symlinkSync(
+                            path.join(curPath),
+                            path.join(kitHomePath, kitName)
+                        );
+
+                        // init starterkit config
+                        kitOptions.list[kitName] = {
+                            originalName: packageJson.name,
+                            url: null,
+                            path: linkPath,
+                            description: packageJson.description,
+                            versions: [ver],
+                            currentVersion: ver,
+                            latestVersion: ver
+                        };
+
+                        this.writeKitOptions(kitOptions);
+
+                        this.success(`${kitName}@${ver} installed.`);
+                    } else {
+                        this.error(err);
+                    }
+                });
         });
 };

@@ -871,7 +871,29 @@ describe('develop', () => {
                 silent: (isSilent) => {
                     return fakeGit;
                 },
-                branch: () => {
+                branchLocal: (cb) => {
+                    cb(null, {
+                        detached: false,
+                        current: 'master',
+                        all: ['master'],
+                        branches: {
+                            '1.0.2': {
+                                current: false,
+                                name: '1.0.2',
+                                commit: '13b155d',
+                                label: '1.0.2'
+                            },
+                            master: {
+                                current: true,
+                                name: 'master',
+                                commit: '13b155d',
+                                label: 'master'
+                            }
+                        }
+                    });
+                    return fakeGit;
+                },
+                branch: (ver, cb) => {
                     let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
                         expect(src).to.eql(path.join(KIT, 'steamer-example5'));
                         expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/steamer-example5'));
@@ -880,6 +902,7 @@ describe('develop', () => {
                         expect(kitOptions).to.eql({
                             list: {
                                 'steamer-example5': {
+                                    originalName: 'steamer-example5',
                                     url: null,
                                     path: path.join(KIT, '../.steamer/starterkits/steamer-example5'),
                                     description: 'steamer starter kit example',
@@ -893,6 +916,8 @@ describe('develop', () => {
                     let kitSuccessStub = sinon.stub(kit, 'success').callsFake((msg) => {
                         expect(msg).to.eql('steamer-example5@1.0.0 installed.');
                     });
+
+                    cb(null);
 
                     kitFsStub.restore();
                     kitWriteKitOptions.restore();
@@ -934,8 +959,23 @@ describe('develop', () => {
                 silent: (isSilent) => {
                     return fakeGit;
                 },
-                branch: () => {
-
+                branchLocal: (cb) => {
+                    cb(null, {
+                        detached: false,
+                        current: 'master',
+                        all: ['master'],
+                        branches: {
+                            master: {
+                                current: true,
+                                name: 'master',
+                                commit: '13b155d',
+                                label: '1.0.2'
+                            }
+                        }
+                    });
+                    return fakeGit;
+                },
+                branch: (ver, cb) => {
                     let kitFsStub = sinon.stub(kit.fs, 'symlinkSync').callsFake((src, dest) => {
                         expect(src).to.eql(path.join(KIT, 'steamer-example5'));
                         expect(dest).to.eql(path.join(KIT, '../.steamer/starterkits/library'));
@@ -963,6 +1003,8 @@ describe('develop', () => {
                     kitSuccessStub.restore();
 
                     kitGitStub.restore();
+
+                    cb(null);
                     return fakeGit;
                 }
             };
