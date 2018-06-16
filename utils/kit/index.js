@@ -2,24 +2,24 @@ const fs = require('fs-extra');
 const path = require('path');
 const url = require('url');
 const compareVer = require('compare-versions');
+const klawSync = require('klaw-sync');
 
 /**
  * delete require cache from filePath
  * @param {String} filePath file path
  */
-let delRequireCache = function(filePath) {
+exports.delRequireCache = function(filePath) {
     let realpath = fs.realpathSync(filePath);
     if (require.cache[realpath]) {
         delete require.cache[realpath];
     }
 };
-exports.delRequireCache = delRequireCache;
 
 /**
  * get name space from repo url for starterkit
  * @param {String} repoParam repo url
  */
-let getNameSpace = function(repoParam) {
+exports.getNameSpace = function(repoParam) {
     let localPath = '';
     if (repoParam.indexOf('http') >= 0) {
         let repo = url.parse(repoParam);
@@ -27,50 +27,44 @@ let getNameSpace = function(repoParam) {
             return this.error('Please input correct repo url');
         }
         localPath = `${repo.host}${repo.pathname.replace('.git', '')}`;
-    }
-    else if (repoParam.indexOf('git@') === 0) {
+    } else if (repoParam.indexOf('git@') === 0) {
         localPath = repoParam
             .replace('git@', '')
             .replace('.git', '')
             .replace(':', '/');
-    }
-    else if (typeof this.kitOptions.list[repoParam] !== 'undefined') {
-        localPath = getNameSpace(this.kitOptions.list[repoParam].url);
+    } else if (typeof this.kitOptions.list[repoParam] !== 'undefined') {
+        localPath = exports.getNameSpace.bind(this)(this.kitOptions.list[repoParam].url);
     }
 
     return localPath;
 };
-exports.getNameSpace = getNameSpace;
 
 /**
  * get starterkit name from name space
  * @param {String} ns name space of starterkit
  */
-let getKitName = function(ns) {
+exports.getKitName = function(ns) {
     let kit = null;
     if (ns.split('/').length === 3) {
         kit = ns.split('/')[2];
     }
     return kit;
 };
-exports.getKitName = getKitName;
 
-let getPkgJson = function(localPath) {
+exports.getPkgJson = function(localPath) {
     let pkgJsonPath = path.join(localPath, 'package.json');
     if (fs.existsSync(pkgJsonPath)) {
-        delRequireCache.bind(this)(pkgJsonPath);
+        exports.delRequireCache.bind(this)(pkgJsonPath);
         return require(pkgJsonPath);
-    }
-    else {
+    } else {
         throw new Error('package.json does not exist');
     }
 };
-exports.getPkgJson = getPkgJson;
 
 /**
  * help
  */
-let help = function() {
+exports.help = function() {
     this.printUsage(this.description, 'kit');
     this.printOption([
         {
@@ -105,31 +99,28 @@ let help = function() {
         }
     ]);
 };
-exports.help = help;
 
-let addVersion = function(oldVers, newVer) {
-    for (let i = 0, len = oldVers.length; i < len; i++) {
-        if (compareVer(newVer, oldVers[i]) > 0) {
-            oldVers.unshift(newVer);
-            return oldVers;
-        }
+exports.addVersion = function(oldVers, newVer) {
+    if (oldVers.indexOf(newVer) === -1) {
+        // addin if not exists
+        oldVers.push(newVer);
     }
-
-    oldVers.push(newVer);
+    // sort
+    oldVers.sort(function(a, b) {
+        return compareVer(b, a);
+    });
     return oldVers;
 };
-exports.addVersion = addVersion;
 
-let getVersion = function(tag) {
+exports.getVersion = function(tag) {
     return tag.replace(/[a-zA-Z]+/gi, '');
 };
-exports.getVersion = getVersion;
 
 /**
  * check folder empty or not
  * @param {*} folderPath
  */
-let checkEmpty = function(folderPath, ignoreFiles = []) {
+exports.checkEmpty = function(folderPath, ignoreFiles = []) {
     // 查看目标目录是否为空
     if (path.resolve(folderPath) === process.cwd()) {
         let folderInfo = fs.readdirSync(folderPath);
@@ -137,9 +128,112 @@ let checkEmpty = function(folderPath, ignoreFiles = []) {
             return !ignoreFiles.includes(item);
         });
         return !folderInfo.length;
-    }
-    else {
+    } else {
         return !fs.existsSync(folderPath);
     }
 };
-exports.checkEmpty = checkEmpty;
+
+/**
+ * write starterkit options
+ * @param {Object} options starter kit options
+ */
+exports.writeKitOptions = function(options = {}) {
+    try {
+        // let updatedOptions = this.getKitOptions();
+
+        // updatedOptions.timestamp = Date.now();
+        this.fs.ensureFileSync(this.kitOptionsPath);
+        this.fs.writeFileSync(
+            this.kitOptionsPath,
+            `module.exports = ${JSON.stringify(options, null, 4)};`,
+            'utf-8'
+        );
+    } catch (e) {
+        this.error(e.stack);
+    }
+};
+
+/**
+ * get starterkit options from $Home/.steamer/starterkits/starterkits.js
+ */
+exports.getKitOptions = function() {
+    if (!this.fs.existsSync(this.kitOptionsPath)) {
+        let options = {
+            list: {},
+            timestamp: Date.now()
+        };
+        this.fs.ensureFileSync(this.kitOptionsPath);
+        this.fs.writeFileSync(
+            this.kitOptionsPath,
+            `module.exports = ${JSON.stringify(options, null, 4)};`,
+            'utf-8'
+        );
+    }
+
+    exports.delRequireCache.bind(this)(this.kitOptionsPath);
+
+    let kitOptions = require(this.kitOptionsPath);
+
+    return kitOptions;
+};
+
+exports.spinSuccess = function(msg) {
+    this.spinner.stop().succeed([msg]);
+};
+
+exports.spinFail = function(kitName, err = null, reject = null) {
+    if (err) {
+        this.spinner.stop().fail([`${kitName} ${err}`]);
+        reject && reject(err);
+    }
+};
+
+/**
+ *  read starterkit config
+ * @param {String} kitConfigPath
+ */
+exports.readKitConfig = function(kitConfigPath) {
+    exports.delRequireCache.bind(this)(kitConfigPath);
+    return require(kitConfigPath);
+};
+
+exports.createPluginConfig = function(conf, folder) {
+    let config = conf;
+
+    this.createConfig(config, {
+        folder: folder,
+        overwrite: true
+    });
+};
+
+/**
+ * loop files and replace placeholder
+ * @param {String} folder
+ * @param {*} extensions
+ * @param {*} replaceObj
+ */
+exports.walkAndReplace = function(folder, extensions = [], replaceObj = {}) {
+    let files = klawSync(folder, { nodir: true });
+
+    if (extensions.length) {
+        files = files.filter(item => {
+            let ext = path.extname(item.path);
+            return extensions.includes(ext);
+        });
+    }
+
+    files.forEach(file => {
+        let content = this.fs.readFileSync(file.path, 'utf-8');
+
+        Object.keys(replaceObj).forEach(key => {
+            content = content.replace(
+                new RegExp('<% ' + key + ' %>', 'g'),
+                function(match) {
+                    return replaceObj[key];
+                }
+            );
+        });
+
+        this.fs.writeFileSync(file.path, content, 'utf-8');
+    });
+};
