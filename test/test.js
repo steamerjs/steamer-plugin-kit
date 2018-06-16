@@ -8,7 +8,7 @@ const {
     delRequireCache,
     getNameSpace,
     checkEmpty
-} = require('../utils/kit');
+} = require('../libs/kit/utils');
 
 const CUR_ENV = process.cwd();
 const TEST = 'test';

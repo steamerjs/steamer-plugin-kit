@@ -11,15 +11,15 @@ const {
     writeKitOptions,
     walkAndReplace,
     readKitConfig
-} = require('./utils/kit');
+} = require('./libs/kit/utils');
 
-const initProject = require('./libs/init');
-const installKit = require('./libs/install');
-const updateKit = require('./libs/update');
-const uninstallKit = require('./libs/uninstall');
-const template = require('./libs/template');
-const listKit = require('./libs/list');
-const developKit = require('./libs/develop');
+const initProject = require('./libs/kit/init');
+const installKit = require('./libs/kit/install');
+const updateKit = require('./libs/kit/update');
+const uninstallKit = require('./libs/kit/uninstall');
+const template = require('./libs/kit/template');
+const listKit = require('./libs/kit/list');
+const developKit = require('./libs/kit/develop');
 
 /**
  * // .steamer/steamer.plugin-kit.js

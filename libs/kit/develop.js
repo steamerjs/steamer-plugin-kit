@@ -5,7 +5,7 @@
  */
 
 const path = require('path');
-const { help, delRequireCache } = require('../utils/kit');
+const { help, delRequireCache } = require('./utils');
 
 /**
  * develop starterkit and make it on starterkit list

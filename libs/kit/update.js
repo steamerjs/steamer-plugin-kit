@@ -6,7 +6,7 @@ const inquirer = require('inquirer');
 const path = require('path');
 const _ = require('lodash');
 const compareVer = require('compare-versions');
-const { spinSuccess, spinFail, readKitConfig, delRequireCache, addVersion } = require('../utils/kit');
+const { spinSuccess, spinFail, readKitConfig, delRequireCache, addVersion } = require('./utils');
 
 /**
  * back up files for project which is about to update

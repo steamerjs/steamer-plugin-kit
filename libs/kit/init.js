@@ -7,7 +7,7 @@ const {
     readKitConfig,
     checkEmpty,
     createPluginConfig
-} = require('../utils/kit');
+} = require('./utils');
 
 /**
  * copy starterkit files to project folder

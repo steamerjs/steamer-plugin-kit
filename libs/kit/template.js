@@ -4,7 +4,7 @@
 
 const path = require('path');
 const inquirer = require('inquirer');
-const { createPluginConfig, walkAndReplace } = require('../utils/kit');
+const { createPluginConfig, walkAndReplace } = require('./utils');
 
 /**
  * Install template dependency

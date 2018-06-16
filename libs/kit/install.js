@@ -12,7 +12,7 @@ const {
     help,
     spinSuccess,
     spinFail,
-} = require('../utils/kit');
+} = require('./utils');
 
 /**
  * start cloning starterkit
