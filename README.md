@@ -4,7 +4,7 @@ starter kit 管理命令
 
 [![NPM Version](https://img.shields.io/npm/v/steamer-plugin-kit.svg?style=flat)](https://www.npmjs.com/package/steamer-plugin-kit)
 [![Travis](https://img.shields.io/travis/steamerjs/steamer-plugin-kit.svg)](https://travis-ci.org/steamerjs/steamer-plugin-kit)
-[![AppVeyor](https://img.shields.io/appveyor/ci/steamerjs/steamer-plugin-kit.svg)](https://ci.appveyor.com/project/lcxfs1991/html-res-webpack-plugin)
+[![AppVeyor](https://img.shields.io/appveyor/ci/steamerjs/steamer-plugin-kit.svg)](https://ci.appveyor.com/project/steamerjs/steamer-plugin-kit)
 [![Deps](https://img.shields.io/david/steamerjs/steamer-plugin-kit.svg)](https://david-dm.org/steamerjs/steamer-plugin-kit)
 [![Coverage](https://img.shields.io/coveralls/steamerjs/steamer-plugin-kit.svg)](https://coveralls.io/github/steamerjs/steamer-plugin-kit)
 
