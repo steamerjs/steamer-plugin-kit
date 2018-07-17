@@ -225,3 +225,27 @@ steamer kit --develop [alias name]
 // or
 steamer kit -d [alias name]
 ```
+
+## 基于模板生成组件
+
+#### create a templateconfig.json in your project's root directory & write 
+```json
+ { "templatepath": "CustomTemplate", "componentPlacementPath": "src"}
+```
+- **templatepath**:  the placement of your template
+- **CustomAddcCmponents**: The root directory which you want to place your component
+
+```javascript
+steamer kit --addTemplate
+// or
+steamer kit -a
+
+? please input the component name myComponnetName
+? please input the component‘s file’s name(index) myComponnetFileName
+? please choose your template 
+❯ ReactTemplate
+  RVueTemplate
+? please choose your placement 
+❯ src/aa
+  src/bb
+```
