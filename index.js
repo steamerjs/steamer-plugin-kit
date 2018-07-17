@@ -20,6 +20,7 @@ const uninstallKit = require('./libs/kit/uninstall');
 const template = require('./libs/kit/template');
 const listKit = require('./libs/kit/list');
 const developKit = require('./libs/kit/develop');
+const addTemplate = require('./libs/kit/addTemplate');
 
 /**
  * // .steamer/steamer.plugin-kit.js
@@ -84,6 +85,7 @@ class KitPlugin extends SteamerPlugin {
         let isTemplate = argvs.template || argvs.t;
         let isList = argvs.list || argvs.l;
         let isDevelop = argvs.develop || argvs.d;
+        let isAddTemplate = argvs.addTemplate || argvs.a;
 
         if (isAdd) {
             installKit.installKit.bind(this)(isAdd, isTag, isAlias);
@@ -97,6 +99,8 @@ class KitPlugin extends SteamerPlugin {
             listKit.bind(this)();
         } else if (isDevelop) {
             developKit.bind(this)(isDevelop);
+        } else if (isAddTemplate) {
+            addTemplate.bind(this)();
         }
         // ignore other command options
         else if (Object.keys(argvs).length <= 4) {

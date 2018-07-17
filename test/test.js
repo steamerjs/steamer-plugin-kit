@@ -97,7 +97,7 @@ describe('add starterkit', function () {
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {}};
+        let kitOptions = { list: {} };
         kitOptions.list['steamer-example1'] = {
             url: repoUrl,
             path: path.join(kitHomePath, 'steamer-example1'),
@@ -137,7 +137,7 @@ describe('add starterkit', function () {
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {}};
+        let kitOptions = { list: {} };
         kit.writeKitOptions(kitOptions); // reset starterkit.js
 
         let kitCloneLatest = sinon.stub(kit, 'cloneLatest').usingPromise(bluebird.Promise).resolves();
@@ -164,7 +164,7 @@ describe('add starterkit', function () {
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {}};
+        let kitOptions = { list: {} };
         kit.writeKitOptions(kitOptions); // reset starterkit.js
 
         let kitCloneTag = sinon.stub(kit, 'cloneTag').usingPromise(bluebird.Promise).resolves();
@@ -192,7 +192,7 @@ describe('add starterkit', function () {
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {}};
+        let kitOptions = { list: {} };
         kit.writeKitOptions(kitOptions); // reset starterkit.js
         kit.kitOptions = kit.getKitOptions(); // re-getKitOptions
 
@@ -274,7 +274,7 @@ describe('add starterkit', function () {
         });
         kit.kitHomePath = kitHomePath;
         kit.kitOptionsPath = kitOptionsPath;
-        let kitOptions = { list: {}};
+        let kitOptions = { list: {} };
         kit.writeKitOptions(kitOptions); // reset starterkit.js
         kit.kitOptions = kit.getKitOptions(); // re-getKitOptions
         kit.kitOptions.list['steamer-example2'] = {
@@ -1014,6 +1014,38 @@ describe('develop', () => {
         kit.init();
 
         process.chdir(CUR_ENV);
+    });
+
+});
+
+
+describe('install addTemplate', function () {
+
+    let project6 = path.join(PROJECT, 'steamer-project4');
+
+    before(() => {
+        fs.copySync(path.join(process.cwd(), TEST, 'kit/steamer-example6'), path.join(PROJECT, 'steamer-project4'));
+        process.chdir(project6);
+    });
+
+    after(() => {
+        process.chdir(CUR_ENV);
+    });
+
+    it('install template', function (done) {
+        this.timeout(10000);
+        let kit = new SteamerKit({
+            a: true,
+        });
+        kit.init();
+
+        userInput('data', 'myComponnetName\n', 1);
+        userInput('data', '\n', 2);
+        userInput('data', '\n', 3);
+        userInput('data', '\n', 4);
+        userInput('data', 'a', 5);
+        userInput('data', 'a', 6);
+        userInput('data', '\n', 7);
     });
 
 });
